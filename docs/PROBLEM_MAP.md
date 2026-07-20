@@ -14,7 +14,8 @@ On large productions (film sets, large-scale YouTube shoots, live events), the i
 | Line Producer / UPM | Budget reality vs. plan, especially travel & lodging burn | Manual reconciliation across sheets and receipts |
 | Production Coordinator | One place to manage crew data, travel, hotels, and changes | 6–12 spreadsheets, airline sites, hotel emails, PDFs |
 | Department Heads (camera, audio, G&E, art, catering…) | Their team's roster, arrivals, and schedule | Forwarded emails and word of mouth |
-| Crew member | "Where do I need to be, when, and where am I sleeping?" | Digging through texts and email for a confirmation number |
+| Crew member | "Where do I need to be, when, where am I sleeping — and did I get paid right?" | Digging through texts and email for a confirmation number |
+| Payroll Accountant | Clean timecards, rates, and start paperwork per person per day | Chasing paper timecards and reconciling against a stale crew sheet |
 
 ## The core problems
 
@@ -43,6 +44,14 @@ Call time changes at 11pm go out as a group text. No read receipts, no confirmat
 ### 6. The EP is flying blind
 There is no rollup view. Confirmation status by department, travel status, lodging occupancy, budget burn — all of it lives in other people's heads and inboxes. The EP's dashboard today is their phone's call log.
 
+### 7. Payroll runs on data nobody keeps in one place
+Paying the crew requires exactly the data that's scattered everywhere else: who worked which days, at what rate, under which deal (union scale vs. negotiated, daily vs. weekly), plus kit rentals, per diems tied to travel days, and overtime triggers (meal penalties, short turnaround, 6th/7th-day premiums). Today that means:
+- Paper or spreadsheet timecards chased down every week by coordinators
+- Start paperwork (deal memos, W-4/I-9, direct deposit) living in email attachments, so nobody can say who's actually cleared to work
+- Per diems calculated off travel dates that live in a different sheet than the rates
+- The payroll service (Entertainment Partners, Cast & Crew, Wrapbook…) receiving messy inputs and producing disputes ("I worked that Saturday")
+- Labor burn — usually the biggest line item — invisible to the EP until the payroll report lands days later
+
 ## What the dashboard has to be, structurally
 
 The problems above imply five connected pillars, all hanging off one spine:
@@ -51,15 +60,18 @@ The problems above imply five connected pillars, all hanging off one spine:
 - **Crew directory** — every person, their department, role, work dates, status (invited → confirmed → traveled → wrapped), and paperwork/onboarding state. Department heads see their people; coordinators see everything.
 - **Travel & lodging board** — flights and hotel assignments per person, linked to their work dates, with mismatch warnings (hotel checkout before last work day, no flight for a confirmed crew member, etc.).
 - **Comms hub** — announcements targeted by department or whole-crew, with read/acknowledge tracking, replacing the group-text void.
-- **EP overview** — the top of the funnel: per-department confirmation %, travel status counts, lodging occupancy and orphan nights, open alerts. Answers "is everything on track?" in one screen.
+- **Payroll tracker** — each person's rate, deal type, paperwork/clearance status, worked days (driven by the schedule spine), per diems (driven by travel dates), and timecard status per pay week. Feeds clean data to the payroll service; surfaces labor burn live.
+- **EP overview** — the top of the funnel: per-department confirmation %, travel status counts, lodging occupancy and orphan nights, labor burn vs. budget, open alerts. Answers "is everything on track and what is it costing?" in one screen.
+
+Note how the spine pays off twice: "who works which days" is the same fact that drives hotel nights, catering counts, **and** payroll days. Keep it in one place and travel, meals, and paychecks stop disagreeing with each other.
 
 ## What this is not (for now)
 
 - Not a booking engine — we track and reconcile bookings, we don't compete with airlines/agencies (v1)
-- Not payroll or accounting — we surface travel/lodging spend, not run the ledger
+- Not a payroll *processor* — we track rates, worked days, per diems, and timecard status, and hand clean data to the payroll service (EP, Cast & Crew, Wrapbook…); we don't cut checks or file taxes
 - Not a replacement for scheduling software like Movie Magic — we hold the schedule spine, not stripboards
 - Not a chat app — we do structured announcements with acknowledgment, not DMs (v1)
 
 ## Sharpest first slice (proposed MVP)
 
-Crew directory + travel/lodging board + EP overview, with the schedule spine underneath. That directly attacks problems 1, 2, 3, and 6 — the "jumping between sites and sheets" pain that started this project. Change propagation (4) and comms (5) build naturally on top once people and dates live in one system.
+Crew directory + travel/lodging board + payroll tracking + EP overview, with the schedule spine underneath. That directly attacks problems 1, 2, 3, 6, and 7 — the "jumping between sites and sheets" pain that started this project, plus live labor burn. Change propagation (4) and comms (5) build naturally on top once people, dates, and rates live in one system.
