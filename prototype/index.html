@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WeProduce — Production Ops</title>
+<style>
+/* ============ tokens ============ */
+:root{
+  color-scheme: light;
+  --page:#f6f6f3; --surface:#fcfcfb; --surface-2:#f1f0ec;
+  --ink:#141413; --ink-2:#52514e; --ink-3:#898781;
+  --line:#e1e0d9; --line-strong:#c3c2b7; --ring:rgba(11,11,11,.10);
+  --accent:#2a78d6; --accent-ink:#1c5cab; --accent-wash:rgba(42,120,214,.10);
+  --good:#0ca30c; --good-text:#006300;
+  --warn:#fab219; --serious:#ec835a; --critical:#d03b3b;
+  --grid:#e1e0d9; --axis:#c3c2b7;
+  --mono:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme: dark;
+    --page:#0d0d0d; --surface:#1a1a19; --surface-2:#232322;
+    --ink:#ffffff; --ink-2:#c3c2b7; --ink-3:#898781;
+    --line:#2c2c2a; --line-strong:#383835; --ring:rgba(255,255,255,.10);
+    --accent:#3987e5; --accent-ink:#6da7ec; --accent-wash:rgba(57,135,229,.14);
+    --good:#0ca30c; --good-text:#0ca30c;
+    --grid:#2c2c2a; --axis:#383835;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --page:#0d0d0d; --surface:#1a1a19; --surface-2:#232322;
+  --ink:#ffffff; --ink-2:#c3c2b7; --ink-3:#898781;
+  --line:#2c2c2a; --line-strong:#383835; --ring:rgba(255,255,255,.10);
+  --accent:#3987e5; --accent-ink:#6da7ec; --accent-wash:rgba(57,135,229,.14);
+  --good:#0ca30c; --good-text:#0ca30c;
+  --grid:#2c2c2a; --axis:#383835;
+}
+:root[data-theme="light"]{
+  color-scheme: light;
+  --page:#f6f6f3; --surface:#fcfcfb; --surface-2:#f1f0ec;
+  --ink:#141413; --ink-2:#52514e; --ink-3:#898781;
+  --line:#e1e0d9; --line-strong:#c3c2b7; --ring:rgba(11,11,11,.10);
+  --accent:#2a78d6; --accent-ink:#1c5cab; --accent-wash:rgba(42,120,214,.10);
+  --good:#0ca30c; --good-text:#006300;
+  --grid:#e1e0d9; --axis:#c3c2b7;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--page);color:var(--ink);font:14px/1.5 var(--sans)}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input,select{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line-strong);border-radius:6px;padding:6px 10px}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* ============ shell ============ */
+.app{display:grid;grid-template-columns:224px 1fr;min-height:100vh}
+.rail{border-right:1px solid var(--line);background:var(--surface);padding:20px 14px;display:flex;flex-direction:column;gap:20px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{font:600 15px/1.2 var(--mono);letter-spacing:.04em}
+.brand small{display:block;font-weight:400;color:var(--ink-3);font-size:10px;letter-spacing:.14em;margin-top:3px}
+.prod-card{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--page)}
+.prod-card .eyebrow{margin-bottom:2px}
+.prod-card b{font-size:13px}
+.prod-card .meta{color:var(--ink-2);font-size:12px;margin-top:2px}
+.eyebrow{font:600 10px/1.3 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;justify-content:space-between;align-items:center;text-align:left;padding:8px 10px;border-radius:7px;color:var(--ink-2);font-weight:500;transition:background .12s}
+.nav button:hover{background:var(--surface-2)}
+.nav button[aria-current="true"]{background:var(--accent-wash);color:var(--accent-ink);font-weight:600}
+.nav .cnt{font:600 10px/1 var(--mono);color:var(--ink-3);background:var(--surface-2);border-radius:10px;padding:3px 7px}
+.nav button[aria-current="true"] .cnt{background:var(--surface);color:var(--accent-ink)}
+.nav .cnt.hot{background:var(--critical);color:#fff}
+.rail-foot{margin-top:auto;color:var(--ink-3);font:11px/1.5 var(--sans)}
+.main{padding:0 28px 48px;min-width:0}
+.topbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:baseline;justify-content:space-between;padding:18px 0 14px;border-bottom:1px solid var(--line);margin-bottom:22px}
+.topbar h1{font:600 19px/1.2 var(--sans);letter-spacing:-.01em;text-wrap:balance}
+.daybadge{font:600 11px/1 var(--mono);letter-spacing:.1em;color:var(--accent-ink);background:var(--accent-wash);padding:7px 11px;border-radius:6px;white-space:nowrap}
+.view{display:none}
+.view.active{display:block}
+.view>h2{font:600 16px/1.3 var(--sans);margin-bottom:4px}
+.view>.sub{color:var(--ink-2);margin-bottom:18px;max-width:64ch}
+
+/* ============ components ============ */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px;margin-bottom:22px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.tile .val{font:600 26px/1.1 var(--sans);margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.tile .note{font-size:12px;color:var(--ink-2)}
+.tile .note .up{color:var(--critical);font-weight:600}
+.tile .note .ok{color:var(--good-text);font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0}
+.card h3{font:600 13px/1.3 var(--sans);margin-bottom:2px}
+.card .cap{font-size:12px;color:var(--ink-3);margin-bottom:12px}
+.chip{display:inline-flex;align-items:center;gap:5px;font:600 11px/1 var(--sans);padding:4px 8px;border-radius:20px;white-space:nowrap}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c,#999)}
+.chip.good{--c:var(--good);background:color-mix(in srgb,var(--good) 12%,var(--surface))}
+.chip.warn{--c:var(--warn);background:color-mix(in srgb,var(--warn) 16%,var(--surface))}
+.chip.serious{--c:var(--serious);background:color-mix(in srgb,var(--serious) 16%,var(--surface))}
+.chip.critical{--c:var(--critical);background:color-mix(in srgb,var(--critical) 14%,var(--surface))}
+.chip.neutral{--c:var(--ink-3);background:var(--surface-2)}
+.chip.accent{--c:var(--accent);background:var(--accent-wash)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{font:600 10px/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--surface-2)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+td .who{font-weight:600}
+td .sub,.dim{color:var(--ink-3);font-size:12px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center}
+.filters input[type=search]{min-width:200px}
+.filters .spacer{flex:1}
+.count-note{color:var(--ink-3);font-size:12px}
+
+/* alerts */
+.alert{display:flex;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);margin-bottom:8px;align-items:flex-start;width:100%;text-align:left;transition:background .12s}
+.alert:hover{background:var(--surface-2)}
+.alert .stripe{width:4px;align-self:stretch;border-radius:2px;flex:none}
+.alert.critical .stripe{background:var(--critical)}
+.alert.serious .stripe{background:var(--serious)}
+.alert.warn .stripe{background:var(--warn)}
+.alert b{font-size:13px}
+.alert .d{font-size:12px;color:var(--ink-2)}
+.alert .sev{margin-left:auto;flex:none}
+
+/* charts */
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto}
+.chart text{font:10.5px var(--mono);fill:var(--ink-3)}
+.chart .dl{font:600 11px var(--sans);fill:var(--ink-2)}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--ink-2);margin-bottom:8px;flex-wrap:wrap}
+.legend .key{display:inline-flex;align-items:center;gap:6px}
+.legend .sw{width:14px;height:3px;border-radius:2px;background:var(--accent)}
+.legend .sw.dash{background:repeating-linear-gradient(90deg,var(--ink-3) 0 4px,transparent 4px 7px)}
+.tip{position:fixed;z-index:50;pointer-events:none;background:var(--ink);color:var(--page);font:12px/1.5 var(--sans);padding:7px 10px;border-radius:7px;box-shadow:0 4px 16px rgba(0,0,0,.25);display:none;max-width:260px}
+.tip b{font-variant-numeric:tabular-nums}
+.hbar{display:grid;grid-template-columns:150px 1fr 90px;gap:10px;align-items:center;margin-bottom:12px}
+.hbar .track{display:block;height:14px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+.hbar .fill{display:block;height:100%;background:var(--accent);border-radius:0 4px 4px 0}
+.hbar .lab{font-size:13px}
+.hbar .lab .sub{display:block}
+.hbar .v{font:600 12px var(--mono);text-align:right;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+
+/* schedule strip */
+.sched{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px}
+.day{border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--surface);font-size:12px}
+.day.off{background:var(--page);color:var(--ink-3)}
+.day.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.day .ph{font:600 10px/1 var(--mono);letter-spacing:.1em}
+.day .dt{font-weight:600;font-size:13px;margin:4px 0 6px}
+.day .st{color:var(--ink-2)}
+.day .st b{font-variant-numeric:tabular-nums}
+.simbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;border:1px dashed var(--line-strong);border-radius:10px;padding:12px 16px;margin-bottom:18px;background:var(--surface)}
+.simbar .btn{background:var(--ink);color:var(--page);font-weight:600;border-radius:7px;padding:8px 14px}
+.simbar .btn[aria-pressed="true"]{background:var(--critical);color:#fff}
+.simresult{font-size:13px;color:var(--ink-2)}
+.simresult b{color:var(--critical);font-variant-numeric:tabular-nums}
+.banner{border:1px solid var(--critical);background:color-mix(in srgb,var(--critical) 8%,var(--surface));border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:13px;display:none}
+.banner.show{display:block}
+.banner b{color:var(--critical)}
+
+@media (max-width: 900px){
+  .app{grid-template-columns:1fr}
+  .rail{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line)}
+  .nav{flex-direction:row;flex-wrap:wrap}
+  .rail-foot{display:none}
+  .grid2{grid-template-columns:1fr}
+  .main{padding:0 16px 40px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail">
+    <div class="brand">WEPRODUCE<small>PRODUCTION OPS</small></div>
+    <div class="prod-card">
+      <div class="eyebrow">Active production</div>
+      <b>ECHO MESA</b>
+      <div class="meta">Commercial · Albuquerque, NM<br>Aug 3 – 20, 2026</div>
+    </div>
+    <nav class="nav" id="nav" aria-label="Views"></nav>
+    <div class="rail-foot">Prototype · mock data<br>Every alert is derived from the data, not typed in.</div>
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <h1 id="viewTitle">Overview</h1>
+      <span class="daybadge">TUE AUG 11 · SHOOT DAY 5 OF 12</span>
+    </div>
+    <div class="banner" id="simBanner"></div>
+    <section class="view" id="view-overview"></section>
+    <section class="view" id="view-crew"></section>
+    <section class="view" id="view-travel"></section>
+    <section class="view" id="view-lodging"></section>
+    <section class="view" id="view-payroll"></section>
+    <section class="view" id="view-schedule"></section>
+  </main>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+"use strict";
+/* hash hooks: "#dark" / "#light" force a theme; "#v:travel" opens a view (used for testing + deep links) */
+const HASH=location.hash.slice(1).split(",");
+if(HASH.includes("dark")) document.documentElement.dataset.theme="dark";
+if(HASH.includes("light")) document.documentElement.dataset.theme="light";
+
+/* ============ calendar ============ */
+const TODAY=11;                                  // Aug 11
+const OFF_DAYS=[9,16];
+const SHOOT_DAYS=[6,7,8,10,11,12,13,14,15,17,18,19];
+const PREP=[3,4,5], WRAP_DAY=20, CAL_START=3, CAL_END=20;
+const fmtDay=d=>"Aug "+d;
+const DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]; // Aug 1 2026 = Saturday
+const dow=d=>DOW[(d+5)%7];
+const phase=d=>PREP.includes(d)?"PREP":d===WRAP_DAY?"WRAP":OFF_DAYS.includes(d)?"OFF":"SD "+(SHOOT_DAYS.indexOf(d)+1);
+const isWorkCal=d=>!OFF_DAYS.includes(d);
+
+/* ============ seeded rng ============ */
+let _s=20260811;
+const rnd=()=>{_s|=0;_s=_s+0x6D2B79F5|0;let t=Math.imul(_s^_s>>>15,1|_s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const pick=a=>a[Math.floor(rnd()*a.length)];
+
+/* ============ crew generation ============ */
+const FIRST=["Marisol","Devon","Priya","Jae","Tomás","Aisha","Colin","Renata","Silas","Nadia","Owen","Lucia","Marcus","Hana","Diego","Tessa","Rashid","Elena","Kofi","Bridget","Yusuf","Carmen","Logan","Ingrid","Andre","Maya","Felix","Rosa","Damian","Kiara","Victor","Noor","Emmett","Sofia","Trent","Amara","Hector","Lily","Omar","Greta","Caleb","Dana","Ruben","Alice","Jonah","Farah","Miles","Bianca","Otis","Selena","Grant","Imani","Pablo","Wren","Dmitri","Celia","Ansel","Rocio","Ezra","Tamsin"];
+const LAST=["Okafor","Reyes","Lindqvist","Nakamura","Prescott","Ibarra","Whitfield","Osei","Marchetti","Delgado","Novak","Ashford","Kaplan","Herrera","Boateng","Castellanos","Ferro","Winslow","Odom","Vasquez","Thorne","Amari","Beckett","Salazar","Grieco","Mbeki","Halvorsen","Quiroga","Stanton","Iqbal","Ferreira","Lockhart","Duran","Vance","Okada","Palacios","Merritt","Sandoval","Crews","Abebe","Rowe","Zamora","Hollis","Navarro","Ostrowski","Barlow","Cisneros","Wilder","Antoine","Maddox","Serrano","Voss","Calloway","Reiner","Toledo","Ellison","Barragan","Foley","Naylor","Estrada","Kessler","Montes","Whitaker","Rios","Pemberton","Aguilar","Sherwood","Valdez","Corbin","Fontaine"];
+const usedNames=new Set();
+function makeName(){for(;;){const n=pick(FIRST)+" "+pick(LAST);if(!usedNames.has(n)){usedNames.add(n);return n}}}
+
+const DEPTS=[
+ ["Production",14,.35,["Line Producer","UPM","Production Supervisor","Production Coordinator","APOC","Travel Coordinator","Production Secretary","Office PA","Key Set PA","Set PA"],1450],
+ ["Assistant Directors",6,.2,["1st AD","2nd AD","2nd 2nd AD","Additional 2nd AD","Key PA"],1150],
+ ["Camera",18,.3,["Director of Photography","A-Cam Operator","B-Cam Operator","1st AC","2nd AC","DIT","Loader","Camera PA"],1650],
+ ["Grip & Electric",24,.7,["Gaffer","Best Boy Electric","Electrician","Key Grip","Best Boy Grip","Dolly Grip","Grip"],975],
+ ["Audio",7,.3,["Sound Mixer","Boom Operator","Utility Sound"],925],
+ ["Art",16,.5,["Production Designer","Art Director","Set Decorator","Leadman","Set Dresser","Props Master","Props Assistant","Scenic"],1225],
+ ["Wardrobe",9,.4,["Costume Designer","Costume Supervisor","Set Costumer","Tailor"],925],
+ ["Hair & Makeup",7,.4,["Dept Head Makeup","Key Makeup","Makeup Artist","Dept Head Hair","Hairstylist"],875],
+ ["Catering & Craft",11,.85,["Catering Chef","Sous Chef","Catering Assistant","Craft Service Lead","Craft Service"],625],
+ ["Transport",10,.9,["Transport Captain","Driver"],725],
+ ["Locations",7,.6,["Location Manager","Assistant Location Manager","Location Scout","Location PA"],850],
+ ["Stunts",8,.15,["Stunt Coordinator","Stunt Performer"],1350],
+ ["VFX",5,.2,["VFX Supervisor","VFX Coordinator","Data Wrangler"],1125],
+ ["Medical & Safety",4,.75,["Set Medic","Safety Officer"],675],
+ ["Security",6,.9,["Security Lead","Security Officer"],525],
+];
+const HOMES=[["Los Angeles","LAX",.55],["Atlanta","ATL",.8],["New York","JFK",1]];
+const AIRLINES={LAX:["AA","WN","DL"],ATL:["DL"],JFK:["DL","B6"]};
+const HOTELS=[["Hotel Andaluz",12],["Sawmill Suites",48],["El Vado Motor Court",30]];
+
+const crew=[]; let uid=0;
+for(const [dept,size,localShare,roles,baseRate] of DEPTS){
+  for(let i=0;i<size;i++){
+    const roleIdx=Math.min(i,roles.length-1);
+    const role=roles[roleIdx];
+    const senior=1-(roleIdx/(roles.length))*0.55;
+    const rate=Math.round(baseRate*senior/25)*25;
+    const isLocal=rnd()<localShare;
+    let home="Albuquerque",airport=null;
+    if(!isLocal){const r=rnd();for(const [city,ap,cum] of HOMES){if(r<cum){home=city;airport=ap;break}}}
+    // work window
+    let ws,we;
+    if(dept==="Stunts"){ if(role==="Stunt Coordinator"){ws=10;we=16} else {ws=12;we=15} }
+    else if(roleIdx<=1){ws=3;we=20}
+    else {ws=rnd()<.6?5:6; we=rnd()<.7?19:20}
+    const status=(ws>TODAY&&rnd()<.35)?"pending":"confirmed";
+    crew.push({id:uid++,name:makeName(),dept,role,rate,home,airport,local:isLocal,ws,we,status,
+      deal:rnd()<.55?"Union scale":"Negotiated",period:roleIdx<=1&&rnd()<.5?"Weekly":"Daily",
+      paperwork:"cleared",hotel:null,room:null,ci:null,co:null,
+      inb:null,outb:null,tc1:null,perDiemDay:isLocal?0:65});
+  }
+}
+/* art swing crew: wrapped Aug 8, flew in from LA (rooms will outlive them — the orphan-night story) */
+crew.filter(c=>c.dept==="Art").slice(9,12).forEach(c=>{c.ws=3;c.we=8;c.status="confirmed";
+  c.local=false;c.home="Los Angeles";c.airport="LAX";c.perDiemDay=65});
+
+/* flights + hotels for fly-ins */
+let flightN=1000;
+const roomN={}; HOTELS.forEach(h=>roomN[h[0]]=100);
+function flight(ap,day,dir){
+  const al=pick(AIRLINES[ap]);
+  return {day,from:dir==="in"?ap:"ABQ",to:dir==="in"?"ABQ":ap,code:al+" "+(flightN+=Math.floor(rnd()*37)+3),
+    status:day<TODAY?"landed":day>TODAY?"booked":"landed"};
+}
+for(const c of crew){
+  if(c.local) continue;
+  c.inb=flight(c.airport,c.ws-1,"in");
+  c.outb=flight(c.airport,c.we+1,"out");
+  const h=(c.role.match(/Producer|UPM|Director|Designer|Gaffer|Mixer|1st AD|Supervisor|Coordinator/)&&rnd()<.75)?HOTELS[0]:(rnd()<.72?HOTELS[1]:HOTELS[2]);
+  c.hotel=h[0]; c.room=String(roomN[h[0]]++);
+  c.ci=c.ws-1; c.co=c.we+1;
+}
+/* timecards for pay week 1 (Aug 3-8) */
+const week1Workers=crew.filter(c=>c.ws<=8);
+week1Workers.forEach(c=>{c.tc1=rnd()<.78?"approved":"submitted"});
+
+/* ============ curated anomalies (the demo stories) ============ */
+const byName={}; crew.forEach(c=>byName[c.id]=c);
+/* 1. hotel block ends before wrap for 3 Sawmill crew working to Aug 19 */
+crew.filter(c=>c.hotel==="Sawmill Suites"&&c.we>=19&&c.ws<=6).slice(0,3).forEach(c=>c.co=14);
+/* 2. two confirmed stunt performers, arriving tomorrow, no flight booked */
+const stunts=crew.filter(c=>c.role==="Stunt Performer"&&!c.local);
+stunts.slice(0,2).forEach(c=>{c.status="confirmed";c.inb.status="not booked"});
+/* 3. today's arrivals: stunt unit in transit */
+stunts.slice(2).forEach((c,i)=>{c.inb.status=i===0?"delayed":(i===1?"in air":"landed")});
+/* 4. six people missing start paperwork */
+[crew.filter(c=>c.dept==="Grip & Electric")[5],crew.filter(c=>c.dept==="Art")[6],
+ crew.filter(c=>c.dept==="Camera")[9],crew.filter(c=>c.dept==="Transport")[3],
+ stunts[0],crew.filter(c=>c.dept==="Catering & Craft")[4]].forEach(c=>c&&(c.paperwork="missing"));
+/* 5. eleven missing week-1 timecards */
+week1Workers.filter(c=>c.tc1==="submitted").slice(0,6).forEach(c=>c.tc1="missing");
+week1Workers.filter(c=>c.tc1==="approved").slice(0,5).forEach(c=>c.tc1="missing");
+/* 6. orphan nights: wrapped art swing still holds rooms through Aug 12 */
+crew.filter(c=>c.we===8&&c.hotel).forEach(c=>{c.co=12;if(c.outb)c.outb={day:9,from:"ABQ",to:c.airport,code:c.outb.code,status:"landed"}});
+
+/* ============ derived facts ============ */
+const money=n=>"$"+Math.round(n).toLocaleString("en-US");
+const moneyK=n=>n>=1e6?"$"+(n/1e6).toFixed(1)+"M":n>0?"$"+Math.round(n/1000)+"k":"0";
+const signedMoney=n=>(n<0?"−":"+")+money(Math.abs(n));
+const workingOn=(c,d)=>c.ws<=d&&d<=c.we&&isWorkCal(d);
+const onLocation=(c,d)=>!c.local&&c.ci!==null&&c.ci<=d&&d<c.co;
+const daysWorkedTo=(c,d)=>{let n=0;for(let x=c.ws;x<=Math.min(d,c.we);x++)if(isWorkCal(x))n++;return n};
+const grossTo=(c,d)=>c.rate*daysWorkedTo(c,d)+c.perDiemDay*Math.max(0,Math.min(d,c.co??d)-(c.ci??d));
+
+function deriveAlerts(shift){
+  /* shift = simulated slip in days applied to end-of-run work dates; bookings stay put */
+  const sh=c=>({...c,we:c.we>=15?c.we+shift:c.we});
+  const A=[];
+  for(const c0 of crew){
+    const c=shift?sh(c0):c0;
+    if(!c.local&&c.status==="confirmed"&&c.inb&&c.inb.status==="not booked"&&c.ws-TODAY<=2)
+      A.push({sev:"critical",who:c,t:"No inbound flight booked",d:c.name+" ("+c.role+") is confirmed to start "+fmtDay(c.ws)+" — no flight exists.",view:"travel"});
+    if(c.hotel&&c.co<c.we+1)
+      A.push({sev:"serious",who:c,t:"Hotel ends before last work day",d:c.name+" checks out "+fmtDay(c.co)+" but works through "+fmtDay(c.we)+" ("+c.hotel+").",view:"lodging"});
+    if(!c.local&&c.outb&&c.outb.day<c.we+1&&c.we>=TODAY&&c.outb.status!=="landed")
+      A.push({sev:"serious",who:c,t:"Return flight before wrap",d:c.name+" flies out "+fmtDay(c.outb.day)+" but now works through "+fmtDay(c.we)+".",view:"travel"});
+    if(c.paperwork==="missing"&&c.we>=TODAY)
+      A.push({sev:"serious",who:c,t:"Not cleared to work",d:c.name+" ("+c.dept+") has no start paperwork on file.",view:"payroll"});
+    if(!c.local&&c.inb&&c.inb.day===TODAY&&c.inb.status==="delayed")
+      A.push({sev:"warn",who:c,t:"Arrival delayed",d:c.name+" — "+c.inb.code+" from "+c.inb.from+" is delayed. Works tomorrow.",view:"travel"});
+  }
+  const tcMissing=crew.filter(c=>c.tc1==="missing");
+  if(tcMissing.length&&!shift)
+    A.push({sev:"warn",t:tcMissing.length+" timecards missing for pay week Aug 3–8",d:"Payroll cutoff is Wed. "+tcMissing.slice(0,3).map(c=>c.name).join(", ")+"…",view:"payroll"});
+  const orphans=crew.filter(c=>c.hotel&&c.co>c.we+1&&c.we<TODAY);
+  const oN=orphans.reduce((s,c)=>s+(c.co-(c.we+1)),0);
+  if(oN&&!shift)
+    A.push({sev:"warn",t:oN+" orphan hotel nights on the block",d:orphans.length+" wrapped crew still hold rooms ("+orphans.map(c=>c.hotel)[0]+"). ≈ "+money(oN*168)+" of unused nights.",view:"lodging"});
+  const rank={critical:0,serious:1,warn:2};
+  return A.sort((a,b)=>rank[a.sev]-rank[b.sev]);
+}
+const ALERTS=deriveAlerts(0);
+const SLIP=deriveAlerts(1);
+
+/* labor burn */
+const planDaily=d=>PREP.includes(d)?46000:OFF_DAYS.includes(d)?0:d===WRAP_DAY?58000:118000;
+function actualDaily(d){let s=0;for(const c of crew){if(workingOn(c,d))s+=c.rate;if(onLocation(c,d))s+=c.perDiemDay}
+  if(d===13||d===14)s*=1.08; /* night shoots: OT bump */ return s}
+const burn={days:[],plan:[],act:[]};
+{let p=0,a=0;for(let d=CAL_START;d<=CAL_END;d++){p+=planDaily(d);if(d<=TODAY)a+=actualDaily(d);
+  burn.days.push(d);burn.plan.push(p);burn.act.push(d<=TODAY?a:null)}}
+const actNow=burn.act[TODAY-CAL_START], planNow=burn.plan[TODAY-CAL_START];
+
+/* ============ render helpers ============ */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+const chip=(cls,label)=>`<span class="chip ${cls}">${esc(label)}</span>`;
+const statusChip=s=>({confirmed:chip("good","Confirmed"),pending:chip("warn","Pending"),invited:chip("neutral","Invited")}[s]);
+const tcChip=s=>s==null?'<span class="dim">—</span>':{approved:chip("good","Approved"),submitted:chip("accent","Submitted"),missing:chip("critical","Missing")}[s];
+const pwChip=s=>s==="cleared"?chip("good","Cleared"):chip("serious","Missing docs");
+const flChip=s=>({landed:chip("good","Landed"),"in air":chip("accent","In air"),booked:chip("neutral","Booked"),delayed:chip("warn","Delayed"),"not booked":chip("critical","Not booked")}[s]);
+
+const tip=$("#tip");
+function showTip(html,x,y){tip.innerHTML=html;tip.style.display="block";
+  const r=tip.getBoundingClientRect();
+  tip.style.left=Math.min(x+14,innerWidth-r.width-8)+"px";
+  tip.style.top=Math.max(8,y-r.height-10)+"px"}
+function hideTip(){tip.style.display="none"}
+
+/* ============ charts ============ */
+function burnChart(){
+  const W=560,H=210,L=52,R=14,T=16,B=26,pw=W-L-R,ph=H-T-B;
+  const max=burn.plan[burn.plan.length-1]*1.05;
+  const X=i=>L+pw*i/(burn.days.length-1), Y=v=>T+ph*(1-v/max);
+  const pts=f=>f.map((v,i)=>v==null?null:[X(i),Y(v)]).filter(Boolean);
+  const path=ps=>ps.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
+  const aP=pts(burn.act), pP=pts(burn.plan);
+  const area=path(aP)+" L"+aP[aP.length-1][0].toFixed(1)+","+(T+ph)+" L"+aP[0][0].toFixed(1)+","+(T+ph)+" Z";
+  let g="";
+  for(let i=0;i<=3;i++){const v=max*i/3,y=Y(v);
+    g+=`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="var(--grid)"/>`+
+       `<text x="${L-6}" y="${y+3.5}" text-anchor="end">${moneyK(v)}</text>`}
+  let xt="";
+  for(const d of [3,7,11,15,20]){const i=d-CAL_START;xt+=`<text x="${X(i)}" y="${H-8}" text-anchor="middle">${fmtDay(d)}</text>`}
+  const tx=X(TODAY-CAL_START);
+  const end=aP[aP.length-1];
+  return `<div class="legend"><span class="key"><span class="sw"></span>Actual to date</span><span class="key"><span class="sw dash"></span>Planned</span></div>
+  <div class="chart" id="burnChart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cumulative labor spend, actual versus planned">
+    ${g}<line x1="${L}" y1="${T+ph}" x2="${W-R}" y2="${T+ph}" stroke="var(--axis)"/>
+    <line x1="${tx}" y1="${T}" x2="${tx}" y2="${T+ph}" stroke="var(--line-strong)" stroke-dasharray="2 4"/>
+    <path d="${path(pP)}" fill="none" stroke="var(--ink-3)" stroke-width="1.5" stroke-dasharray="4 4"/>
+    <path d="${area}" fill="var(--accent)" opacity=".12"/>
+    <path d="${path(aP)}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="${end[0]}" cy="${end[1]}" r="4" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>
+    <text class="dl" x="${end[0]-8}" y="${end[1]-10}" text-anchor="end">${money(actNow)}</text>
+    ${xt}
+    <line id="burnX" x1="0" y1="${T}" x2="0" y2="${T+ph}" stroke="var(--ink-3)" style="display:none"/>
+    <rect id="burnHit" x="${L}" y="${T}" width="${pw}" height="${ph}" fill="transparent"/>
+  </svg></div>`;
+}
+function wireBurn(){
+  const svg=$("#burnChart svg"),hit=$("#burnHit"),xl=$("#burnX");
+  if(!svg)return;
+  const W=560,L=52,R=14,pw=W-L-R;
+  hit.addEventListener("mousemove",e=>{
+    const b=svg.getBoundingClientRect(), sx=(e.clientX-b.left)*(W/b.width);
+    const i=Math.max(0,Math.min(burn.days.length-1,Math.round((sx-L)/pw*(burn.days.length-1))));
+    const X=L+pw*i/(burn.days.length-1);
+    xl.setAttribute("x1",X);xl.setAttribute("x2",X);xl.style.display="block";
+    const d=burn.days[i];
+    showTip(`<div>${dow(d)} ${fmtDay(d)} · ${phase(d)}</div><div>Actual: <b>${burn.act[i]==null?"—":money(burn.act[i])}</b></div><div>Planned: <b>${money(burn.plan[i])}</b></div>`,e.clientX,e.clientY);
+  });
+  hit.addEventListener("mouseleave",()=>{xl.style.display="none";hideTip()});
+}
+function locChart(){
+  const W=560,H=190,L=36,R=14,T=16,B=26,pw=W-L-R,ph=H-T-B;
+  const counts=burn.days.map(d=>crew.filter(c=>c.ws<=d&&d<=c.we).length);
+  const max=Math.max(...counts)*1.12;
+  const X=i=>L+pw*i/(counts.length-1), Y=v=>T+ph*(1-v/max);
+  const ps=counts.map((v,i)=>[X(i),Y(v)]);
+  const path=ps.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
+  const area=path+` L${(W-R)},${T+ph} L${L},${T+ph} Z`;
+  let g="";for(let i=0;i<=2;i++){const v=Math.round(max*i/2/10)*10,y=Y(v);
+    g+=`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="var(--grid)"/><text x="${L-6}" y="${y+3.5}" text-anchor="end">${v}</text>`}
+  let xt="";for(const d of [3,7,11,15,20]){xt+=`<text x="${X(d-CAL_START)}" y="${H-8}" text-anchor="middle">${fmtDay(d)}</text>`}
+  const ti=TODAY-CAL_START;
+  return `<div class="chart" id="locChart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Crew engaged by day">
+    ${g}<line x1="${L}" y1="${T+ph}" x2="${W-R}" y2="${T+ph}" stroke="var(--axis)"/>
+    <path d="${area}" fill="var(--accent)" opacity=".12"/>
+    <path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="${X(ti)}" cy="${Y(counts[ti])}" r="4" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>
+    <text class="dl" x="${X(ti)}" y="${Y(counts[ti])-10}" text-anchor="middle">${counts[ti]} today</text>
+    ${xt}<rect id="locHit" x="${L}" y="${T}" width="${pw}" height="${ph}" fill="transparent"/>
+  </svg></div>`;
+}
+function wireLoc(){
+  const svg=$("#locChart svg");if(!svg)return;
+  const counts=burn.days.map(d=>crew.filter(c=>c.ws<=d&&d<=c.we).length);
+  $("#locHit").addEventListener("mousemove",e=>{
+    const b=svg.getBoundingClientRect(),W=560,L=36,pw=W-L-14;
+    const sx=(e.clientX-b.left)*(W/b.width);
+    const i=Math.max(0,Math.min(counts.length-1,Math.round((sx-L)/pw*(counts.length-1))));
+    const d=burn.days[i];
+    showTip(`<div>${dow(d)} ${fmtDay(d)} · ${phase(d)}</div><div><b>${counts[i]}</b> crew engaged</div>`,e.clientX,e.clientY)});
+  $("#locHit").addEventListener("mouseleave",hideTip);
+}
+
+/* ============ views ============ */
+const VIEWS=[["overview","Overview"],["crew","Crew"],["travel","Travel"],["lodging","Lodging"],["payroll","Payroll"],["schedule","Schedule"]];
+
+function alertHTML(a){
+  const sev={critical:"Critical",serious:"Serious",warn:"Watch"}[a.sev];
+  const cls={critical:"critical",serious:"serious",warn:"warn"}[a.sev];
+  return `<button class="alert ${cls}" data-goto="${a.view}"><span class="stripe"></span>
+    <span><b>${esc(a.t)}</b><div class="d">${esc(a.d)}</div></span>
+    <span class="sev">${chip(cls,sev)}</span></button>`;
+}
+
+function renderOverview(){
+  const confirmed=crew.filter(c=>c.status==="confirmed").length;
+  const onSet=crew.filter(c=>c.ws<=TODAY&&TODAY<=c.we).length;
+  const arrToday=crew.filter(c=>c.inb&&c.inb.day===TODAY).length;
+  const depToday=crew.filter(c=>c.outb&&c.outb.day===TODAY).length;
+  const delta=actNow-planNow, over=delta>0;
+  const nCrit=ALERTS.filter(a=>a.sev==="critical").length, nSer=ALERTS.filter(a=>a.sev==="serious").length;
+  const depts=DEPTS.map(([name])=>{
+    const m=crew.filter(c=>c.dept===name);
+    return {name,n:m.length,conf:m.filter(c=>c.status==="confirmed").length,
+      today:m.filter(c=>c.ws<=TODAY&&TODAY<=c.we).length,
+      al:ALERTS.filter(a=>a.who&&a.who.dept===name).length}});
+  $("#view-overview").innerHTML=`
+  <div class="tiles">
+    <div class="tile"><div class="eyebrow">Crew confirmed</div><div class="val">${confirmed}<span class="dim">/${crew.length}</span></div><div class="note">${crew.length-confirmed} pending — all future starts</div></div>
+    <div class="tile"><div class="eyebrow">Engaged today</div><div class="val">${onSet}</div><div class="note">Shoot day 5 · stage + backlot</div></div>
+    <div class="tile"><div class="eyebrow">Travel today</div><div class="val">${arrToday}<span class="dim"> in</span> · ${depToday}<span class="dim"> out</span></div><div class="note">Stunt unit arriving for SD 6</div></div>
+    <div class="tile"><div class="eyebrow">Labor burn to date</div><div class="val">${money(actNow)}</div><div class="note"><span class="${over?"up":"ok"}">${money(Math.abs(delta))} ${over?"over":"under"}</span> plan</div></div>
+    <div class="tile"><div class="eyebrow">Open alerts</div><div class="val">${ALERTS.length}</div><div class="note">${nCrit} critical · ${nSer} serious</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>Needs attention</h3><div class="cap">Derived live from crew, travel, lodging and payroll data — nobody typed these in.</div>
+      ${ALERTS.map(alertHTML).join("")}</div>
+    <div>
+      <div class="card" style="margin-bottom:14px"><h3>Labor burn</h3><div class="cap">Cumulative, incl. per diems · OT bump on night shoots Aug 13–14</div>${burnChart()}</div>
+      <div class="card"><h3>Crew engaged by day</h3><div class="cap">Everyone whose deal covers the day — the schedule spine</div>${locChart()}</div>
+    </div>
+  </div>
+  <div class="simbar"><button class="btn" id="simBtn" aria-pressed="false">Simulate: schedule slips one day</button>
+    <span class="simresult" id="simOut">The classic disaster — see what one slipped day does to bookings.</span></div>
+  <div class="card"><h3>Departments</h3><div class="cap">Confirmation and attention state by department</div>
+  <div class="tablewrap" style="border:none"><table><thead><tr><th>Department</th><th class="num">Crew</th><th class="num">Confirmed</th><th class="num">Engaged today</th><th>Alerts</th></tr></thead><tbody>
+  ${depts.map(d=>`<tr><td class="who">${esc(d.name)}</td><td class="num">${d.n}</td><td class="num">${d.conf===d.n?'<span class="dim">all</span>':d.conf+" / "+d.n}</td><td class="num">${d.today||'<span class="dim">—</span>'}</td><td>${d.al?chip("serious",d.al+" open"):chip("good","Clear")}</td></tr>`).join("")}
+  </tbody></table></div></div>`;
+  wireBurn();wireLoc();
+  $("#simBtn").addEventListener("click",toggleSim);
+}
+
+let simOn=false;
+function toggleSim(){
+  simOn=!simOn;
+  const btn=$("#simBtn"),out=$("#simOut"),ban=$("#simBanner");
+  btn.setAttribute("aria-pressed",simOn);
+  if(simOn){
+    const hotels=SLIP.filter(a=>a.t==="Hotel ends before last work day").length;
+    const flights=SLIP.filter(a=>a.t==="Return flight before wrap").length;
+    btn.textContent="Reset simulation";
+    out.innerHTML=`Alerts jump from <b>${ALERTS.length}</b> to <b>${SLIP.length}</b>: <b>${flights}</b> return flights and <b>${hotels}</b> hotel stays no longer line up with the new wrap date. In a spreadsheet, someone finds these one phone call at a time.`;
+    ban.classList.add("show");
+    ban.innerHTML=`<b>SIMULATION — WRAP SLIPS AUG 19 → AUG 20.</b> ${flights} return flights and ${hotels} hotel checkouts now end before the last work day. WeProduce flags every one instantly because bookings are linked to the schedule spine.`;
+  }else{
+    btn.textContent="Simulate: schedule slips one day";
+    out.textContent="The classic disaster — see what one slipped day does to bookings.";
+    ban.classList.remove("show");
+  }
+}
+
+function renderCrew(){
+  const v=$("#view-crew");
+  v.innerHTML=`<p class="sub">Every person on the production — deal window, confirmation, paperwork. Department heads would see only their own department.</p>
+  <div class="filters">
+    <input type="search" id="crewQ" placeholder="Search name or role…" aria-label="Search crew">
+    <select id="crewD" aria-label="Filter department"><option value="">All departments</option>${DEPTS.map(d=>`<option>${d[0]}</option>`).join("")}</select>
+    <select id="crewS" aria-label="Filter status"><option value="">Any status</option><option value="confirmed">Confirmed</option><option value="pending">Pending</option></select>
+    <span class="spacer"></span><span class="count-note" id="crewN"></span></div>
+  <div class="tablewrap" style="max-height:70vh;overflow-y:auto"><table><thead><tr>
+    <th>Name</th><th>Department</th><th>Role</th><th>Deal window</th><th>From</th><th>Status</th><th>Paperwork</th></tr></thead><tbody id="crewRows"></tbody></table></div>`;
+  const draw=()=>{
+    const q=$("#crewQ").value.toLowerCase(),d=$("#crewD").value,s=$("#crewS").value;
+    const rows=crew.filter(c=>(!q||(c.name+" "+c.role).toLowerCase().includes(q))&&(!d||c.dept===d)&&(!s||c.status===s));
+    $("#crewN").textContent=rows.length+" of "+crew.length+" people";
+    $("#crewRows").innerHTML=rows.map(c=>`<tr><td><span class="who">${esc(c.name)}</span></td><td>${esc(c.dept)}</td><td>${esc(c.role)}</td>
+      <td class="num">${fmtDay(c.ws)} – ${fmtDay(c.we)}</td><td>${esc(c.home)}${c.local?' <span class="sub">local</span>':""}</td>
+      <td>${statusChip(c.status)}</td><td>${pwChip(c.paperwork)}</td></tr>`).join("");
+  };
+  ["crewQ","crewD","crewS"].forEach(id=>$("#"+id).addEventListener("input",draw));
+  draw();
+}
+
+function renderTravel(){
+  const legs=[];
+  crew.forEach(c=>{if(c.inb)legs.push({c,f:c.inb,dir:"Inbound"});if(c.outb)legs.push({c,f:c.outb,dir:"Outbound"})});
+  legs.sort((a,b)=>a.f.day-b.f.day||a.c.name.localeCompare(b.c.name));
+  const today=legs.filter(l=>l.f.day===TODAY);
+  const noBook=legs.filter(l=>l.f.status==="not booked");
+  const v=$("#view-travel");
+  v.innerHTML=`<p class="sub">Every flight on the production, linked to the person's deal dates — so a mismatch is a flag, not a surprise at the airport.</p>
+  <div class="tiles">
+    <div class="tile"><div class="eyebrow">Flights tracked</div><div class="val">${legs.length}</div><div class="note">${crew.filter(c=>!c.local).length} traveling crew</div></div>
+    <div class="tile"><div class="eyebrow">Moving today</div><div class="val">${today.length}</div><div class="note">Stunt unit in for SD 6</div></div>
+    <div class="tile"><div class="eyebrow">Not booked</div><div class="val">${noBook.length}</div><div class="note">${noBook.length?"Confirmed crew with no ticket":"All clear"}</div></div>
+  </div>
+  <div class="filters">
+    <select id="tvDir" aria-label="Direction"><option value="">In + out</option><option>Inbound</option><option>Outbound</option></select>
+    <select id="tvSt" aria-label="Flight status"><option value="">Any status</option><option>not booked</option><option>delayed</option><option>in air</option><option>booked</option><option>landed</option></select>
+    <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox" id="tvUp" checked> Upcoming + today only</label>
+    <span class="spacer"></span><span class="count-note" id="tvN"></span></div>
+  <div class="tablewrap" style="max-height:65vh;overflow-y:auto"><table><thead><tr>
+    <th>Date</th><th>Traveler</th><th>Leg</th><th>Flight</th><th>Route</th><th>Status</th><th>Deal window</th></tr></thead><tbody id="tvRows"></tbody></table></div>`;
+  const draw=()=>{
+    const d=$("#tvDir").value,s=$("#tvSt").value,up=$("#tvUp").checked;
+    const rows=legs.filter(l=>(!d||l.dir===d)&&(!s||l.f.status===s)&&(!up||l.f.day>=TODAY||l.f.status==="not booked"));
+    $("#tvN").textContent=rows.length+" of "+legs.length+" legs";
+    $("#tvRows").innerHTML=rows.map(l=>`<tr><td class="num">${dow(l.f.day)} ${fmtDay(l.f.day)}</td>
+      <td><span class="who">${esc(l.c.name)}</span> <span class="sub">${esc(l.c.dept)}</span></td>
+      <td>${l.dir}</td><td class="num">${l.f.status==="not booked"?'<span class="dim">—</span>':esc(l.f.code)}</td>
+      <td class="num">${l.f.from} → ${l.f.to}</td><td>${flChip(l.f.status)}</td>
+      <td class="num">${fmtDay(l.c.ws)} – ${fmtDay(l.c.we)}</td></tr>`).join("");
+  };
+  ["tvDir","tvSt","tvUp"].forEach(id=>$("#"+id).addEventListener("input",draw));
+  draw();
+}
+
+function renderLodging(){
+  const NIGHT=168;
+  const guests=crew.filter(c=>c.hotel);
+  const rows=HOTELS.map(([name,block])=>{
+    const g=guests.filter(c=>c.hotel===name);
+    const tonight=g.filter(c=>c.ci<=TODAY&&TODAY<c.co).length;
+    return {name,block,g,tonight}});
+  const orphans=guests.filter(c=>c.co>c.we+1&&c.we<TODAY);
+  const oN=orphans.reduce((s,c)=>s+(c.co-(c.we+1)),0);
+  const short=guests.filter(c=>c.co<c.we+1);
+  const v=$("#view-lodging");
+  v.innerHTML=`<p class="sub">Room blocks reconciled against each person's deal dates. Orphan nights and short stays surface themselves.</p>
+  <div class="tiles">
+    <div class="tile"><div class="eyebrow">Rooms tonight</div><div class="val">${rows.reduce((s,r)=>s+r.tonight,0)}<span class="dim">/${rows.reduce((s,r)=>s+r.block,0)}</span></div><div class="note">across 3 properties</div></div>
+    <div class="tile"><div class="eyebrow">Orphan nights</div><div class="val">${oN}</div><div class="note">≈ ${money(oN*NIGHT)} unused — release them</div></div>
+    <div class="tile"><div class="eyebrow">Stays ending early</div><div class="val">${short.length}</div><div class="note">${short.length?"Checkout before last work day":"All aligned"}</div></div>
+  </div>
+  <div class="card" style="margin-bottom:14px"><h3>Occupancy tonight</h3><div class="cap">${dow(TODAY)} ${fmtDay(TODAY)} · block vs occupied</div>
+    ${rows.map(r=>`<div class="hbar" data-hotel="${esc(r.name)}"><span class="lab">${esc(r.name)}<span class="sub">${r.g.length} guests over run</span></span>
+      <span class="track"><span class="fill" style="width:${(r.tonight/r.block*100).toFixed(1)}%"></span></span>
+      <span class="v">${r.tonight} / ${r.block}</span></div>`).join("")}</div>
+  <div class="tablewrap" style="max-height:60vh;overflow-y:auto"><table><thead><tr>
+    <th>Guest</th><th>Hotel</th><th class="num">Room</th><th>Check-in</th><th>Check-out</th><th>Deal window</th><th>Fit</th></tr></thead><tbody>
+  ${guests.sort((a,b)=>a.hotel.localeCompare(b.hotel)||a.co-b.co).map(c=>{
+    const bad=c.co<c.we+1, orphan=c.co>c.we+1&&c.we<TODAY;
+    return `<tr><td><span class="who">${esc(c.name)}</span> <span class="sub">${esc(c.dept)}</span></td>
+    <td>${esc(c.hotel)}</td><td class="num">${c.room}</td><td class="num">${fmtDay(c.ci)}</td><td class="num">${fmtDay(c.co)}</td>
+    <td class="num">${fmtDay(c.ws)} – ${fmtDay(c.we)}</td>
+    <td>${bad?chip("serious","Ends "+(c.we+1-c.co)+"d early"):orphan?chip("warn",(c.co-(c.we+1))+" orphan nights"):chip("good","Aligned")}</td></tr>`}).join("")}
+  </tbody></table></div>`;
+}
+
+function renderPayroll(){
+  const w1=crew.filter(c=>c.tc1!==null);
+  const w1a=w1.filter(c=>c.tc1==="approved").length,w1s=w1.filter(c=>c.tc1==="submitted").length,w1m=w1.filter(c=>c.tc1==="missing").length;
+  const pwMissing=crew.filter(c=>c.paperwork==="missing").length;
+  const rows=crew.filter(c=>daysWorkedTo(c,TODAY)>0).sort((a,b)=>grossTo(b,TODAY)-grossTo(a,TODAY));
+  const v=$("#view-payroll");
+  v.innerHTML=`<p class="sub">Rates, worked days and timecard state in one place — clean inputs for the payroll service, not another spreadsheet to reconcile.</p>
+  <div class="tiles">
+    <div class="tile"><div class="eyebrow">Gross to date</div><div class="val">${money(actNow)}</div><div class="note">incl. per diems · vs ${money(planNow)} plan</div></div>
+    <div class="tile"><div class="eyebrow">Pay week Aug 3–8</div><div class="val">${w1a}<span class="dim">/${w1.length}</span></div><div class="note">approved · ${w1s} submitted · <span class="up">${w1m} missing</span></div></div>
+    <div class="tile"><div class="eyebrow">Pay week Aug 10–15</div><div class="val">—</div><div class="note">collecting · closes Sat</div></div>
+    <div class="tile"><div class="eyebrow">Start paperwork</div><div class="val">${crew.length-pwMissing}<span class="dim">/${crew.length}</span></div><div class="note"><span class="up">${pwMissing} not cleared</span> to work</div></div>
+  </div>
+  <div class="filters">
+    <select id="pyD" aria-label="Filter department"><option value="">All departments</option>${DEPTS.map(d=>`<option>${d[0]}</option>`).join("")}</select>
+    <select id="pyT" aria-label="Timecard status"><option value="">Any timecard state</option><option>approved</option><option>submitted</option><option>missing</option></select>
+    <span class="spacer"></span><span class="count-note" id="pyN"></span></div>
+  <div class="tablewrap" style="max-height:62vh;overflow-y:auto"><table><thead><tr>
+    <th>Name</th><th>Department</th><th>Deal</th><th class="num">Rate/day</th><th class="num">Days</th><th class="num">Per diem</th><th class="num">Gross to date</th><th>TC Aug 3–8</th><th>Paperwork</th></tr></thead><tbody id="pyRows"></tbody></table></div>`;
+  const draw=()=>{
+    const d=$("#pyD").value,t=$("#pyT").value;
+    const rs=rows.filter(c=>(!d||c.dept===d)&&(!t||c.tc1===t));
+    $("#pyN").textContent=rs.length+" people paid to date";
+    $("#pyRows").innerHTML=rs.map(c=>{
+      const days=daysWorkedTo(c,TODAY), pd=c.perDiemDay*Math.max(0,Math.min(TODAY,c.co??TODAY)-(c.ci??TODAY));
+      return `<tr><td><span class="who">${esc(c.name)}</span></td><td>${esc(c.dept)}</td>
+      <td>${esc(c.deal)} <span class="sub">${esc(c.period)}</span></td><td class="num">${money(c.rate)}</td>
+      <td class="num">${days}</td><td class="num">${pd?money(pd):'<span class="dim">—</span>'}</td>
+      <td class="num"><b>${money(grossTo(c,TODAY))}</b></td><td>${tcChip(c.tc1)}</td><td>${pwChip(c.paperwork)}</td></tr>`}).join("");
+  };
+  ["pyD","pyT"].forEach(id=>$("#"+id).addEventListener("input",draw));
+  draw();
+}
+
+function renderSchedule(){
+  const v=$("#view-schedule");
+  let cards="";
+  for(let d=CAL_START;d<=CAL_END;d++){
+    const eng=crew.filter(c=>c.ws<=d&&d<=c.we).length;
+    const arr=crew.filter(c=>c.inb&&c.inb.day===d).length;
+    const dep=crew.filter(c=>c.outb&&c.outb.day===d).length;
+    const off=OFF_DAYS.includes(d);
+    const note=d===13||d===14?"Night shoot":d===12?"Stunt unit on":d===6?"First shoot day":d===20?"Company wrap":"";
+    cards+=`<div class="day${off?" off":""}${d===TODAY?" today":""}">
+      <div class="ph">${phase(d)}</div><div class="dt">${dow(d)} ${fmtDay(d)}</div>
+      ${off?'<div class="st">Day off</div>':`<div class="st"><b>${eng}</b> engaged</div>`}
+      ${arr?`<div class="st"><b>${arr}</b> arriving</div>`:""}${dep?`<div class="st"><b>${dep}</b> departing</div>`:""}
+      ${note?`<div class="st dim">${note}</div>`:""}</div>`;
+  }
+  v.innerHTML=`<p class="sub">Every flight, hotel night, work day and pay day hangs off these dates. Change a date here and the mismatches surface everywhere else — that's the whole idea.</p>
+  <div class="sched">${cards}</div>`;
+}
+
+/* ============ nav ============ */
+function showView(id){
+  VIEWS.forEach(([v])=>{$("#view-"+v).classList.toggle("active",v===id)});
+  document.querySelectorAll("#nav button").forEach(b=>b.setAttribute("aria-current",b.dataset.v===id));
+  $("#viewTitle").textContent=VIEWS.find(([v])=>v===id)[1];
+  window.scrollTo({top:0});
+}
+$("#nav").innerHTML=VIEWS.map(([v,label])=>{
+  let cnt="";
+  if(v==="overview")cnt=`<span class="cnt hot">${ALERTS.length}</span>`;
+  if(v==="crew")cnt=`<span class="cnt">${crew.length}</span>`;
+  return `<button data-v="${v}" aria-current="${v==="overview"}">${label}${cnt}</button>`}).join("");
+$("#nav").addEventListener("click",e=>{const b=e.target.closest("button");if(b)showView(b.dataset.v)});
+document.addEventListener("click",e=>{const g=e.target.closest("[data-goto]");if(g)showView(g.dataset.goto)});
+
+renderOverview();renderCrew();renderTravel();renderLodging();renderPayroll();renderSchedule();
+const hv=HASH.find(x=>x.startsWith("v:"));
+showView(hv&&VIEWS.some(([v])=>v===hv.slice(2))?hv.slice(2):"overview");
+if(HASH.includes("sim")) toggleSim();
+</script>
+</body>
+</html>
