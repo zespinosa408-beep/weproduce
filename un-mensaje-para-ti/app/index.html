@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Un Mensaje Para Ti</title>
+<style>
+  :root{
+    --fondo:#fbf7f2; --papel:#ffffff; --tinta:#2c2622; --suave:#6f645c;
+    --linea:#e8ded2; --acento:#b4552d; --acento-suave:#fdeee6;
+    --verde:#2f6b46; --verde-suave:#e9f3ec;
+    --alerta:#8a4b12; --alerta-suave:#fdf1e0;
+    --radio:14px; --sombra:0 1px 2px rgba(44,38,34,.06), 0 6px 20px rgba(44,38,34,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --fondo:#1a1613; --papel:#241f1b; --tinta:#f2ece5; --suave:#a99c91;
+      --linea:#3a322c; --acento:#e8875a; --acento-suave:#3a2419;
+      --verde:#7fc79a; --verde-suave:#1e2f24;
+      --alerta:#e0a468; --alerta-suave:#332512;
+      --sombra:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.25);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--fondo); color:var(--tinta);
+    font:17px/1.55 ui-rounded,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    -webkit-text-size-adjust:100%;
+  }
+  .envoltura{max-width:720px;margin:0 auto;padding:0 16px 120px}
+
+  header.cabecera{padding:22px 0 14px;text-align:center}
+  header.cabecera h1{margin:0;font-size:23px;letter-spacing:-.01em;font-weight:700}
+  header.cabecera p{margin:4px 0 0;color:var(--suave);font-size:14px}
+
+  nav.pestanas{
+    position:sticky;top:0;z-index:20;background:var(--fondo);
+    display:flex;gap:6px;padding:8px 0 10px;border-bottom:1px solid var(--linea);margin-bottom:18px;
+  }
+  nav.pestanas button{
+    flex:1;padding:11px 4px;font:inherit;font-size:15px;font-weight:600;
+    background:transparent;color:var(--suave);border:1px solid transparent;
+    border-radius:10px;cursor:pointer;
+  }
+  nav.pestanas button[aria-selected="true"]{background:var(--acento-suave);color:var(--acento);}
+  nav.pestanas .globo{
+    display:inline-block;min-width:20px;padding:0 5px;margin-left:5px;
+    background:var(--acento);color:#fff;border-radius:99px;font-size:12px;line-height:19px;
+  }
+  nav.pestanas button[aria-selected="true"] .globo{background:var(--acento)}
+
+  .tarjeta{
+    background:var(--papel);border:1px solid var(--linea);border-radius:var(--radio);
+    padding:18px;margin-bottom:14px;box-shadow:var(--sombra);
+  }
+  .tarjeta h2{margin:0 0 4px;font-size:18px}
+  .tarjeta .quien{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .tarjeta .quien .nombre{font-size:20px;font-weight:700}
+  .etiqueta{
+    display:inline-block;padding:2px 9px;border-radius:99px;font-size:12.5px;font-weight:600;
+    background:var(--acento-suave);color:var(--acento);
+  }
+  .etiqueta.gris{background:var(--linea);color:var(--suave)}
+  .etiqueta.verde{background:var(--verde-suave);color:var(--verde)}
+  .etiqueta.alerta{background:var(--alerta-suave);color:var(--alerta)}
+
+  textarea.borrador{
+    width:100%;min-height:132px;padding:14px;font:inherit;font-size:16px;line-height:1.5;
+    background:var(--fondo);color:var(--tinta);
+    border:1px solid var(--linea);border-radius:10px;resize:vertical;
+  }
+  textarea.borrador:focus{outline:2px solid var(--acento);outline-offset:1px}
+
+  .botones{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  button.b{
+    font:inherit;font-size:15px;font-weight:600;padding:11px 15px;border-radius:10px;
+    border:1px solid var(--linea);background:var(--papel);color:var(--tinta);cursor:pointer;
+  }
+  button.b:hover{border-color:var(--suave)}
+  button.b.principal{background:var(--acento);border-color:var(--acento);color:#fff;flex:1;min-width:180px}
+  button.b.principal:hover{filter:brightness(1.07)}
+  button.b.tenue{color:var(--suave)}
+  button.b.peligro{color:var(--acento)}
+
+  label.campo{display:block;margin-bottom:13px}
+  label.campo > span{display:block;font-size:14px;font-weight:600;margin-bottom:5px}
+  label.campo .pista{font-weight:400;color:var(--suave)}
+  input[type=text],input[type=tel],input[type=date],input[type=time],select{
+    width:100%;padding:11px 12px;font:inherit;font-size:16px;
+    background:var(--papel);color:var(--tinta);
+    border:1px solid var(--linea);border-radius:10px;
+  }
+  .fila{display:flex;gap:10px}
+  .fila > *{flex:1}
+  .casillas{display:flex;flex-wrap:wrap;gap:8px}
+  .casillas label{
+    display:flex;align-items:center;gap:7px;padding:9px 13px;font-size:15px;
+    border:1px solid var(--linea);border-radius:99px;cursor:pointer;background:var(--papel);
+  }
+  .casillas label:has(input:checked){background:var(--acento-suave);border-color:var(--acento);color:var(--acento);font-weight:600}
+  .casillas input{accent-color:var(--acento);width:17px;height:17px}
+
+  .consentimiento{
+    background:var(--acento-suave);border:1px solid var(--acento);border-radius:10px;
+    padding:13px;font-size:14.5px;margin:6px 0 14px;
+  }
+  .consentimiento label{display:flex;gap:9px;align-items:flex-start;cursor:pointer;font-weight:600}
+  .consentimiento input{margin-top:3px;accent-color:var(--acento);width:18px;height:18px;flex:none}
+
+  .vacio{text-align:center;padding:40px 20px;color:var(--suave)}
+  .vacio strong{display:block;font-size:18px;color:var(--tinta);margin-bottom:6px}
+
+  ul.lista{list-style:none;margin:0;padding:0}
+  ul.lista li{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:13px 0;border-bottom:1px solid var(--linea);
+  }
+  ul.lista li:last-child{border-bottom:none}
+  ul.lista .datos{min-width:0}
+  ul.lista .datos b{font-size:16.5px}
+  ul.lista .datos small{display:block;color:var(--suave);font-size:13.5px}
+
+  .mensaje-item{padding:11px 0;border-bottom:1px solid var(--linea);font-size:16px}
+  .mensaje-item:last-child{border-bottom:none}
+  .mensaje-item small{display:block;color:var(--suave);font-size:12.5px;margin-top:2px}
+
+  details.plegable{border:1px solid var(--linea);border-radius:10px;padding:0;margin-bottom:10px;background:var(--papel)}
+  details.plegable > summary{padding:13px 15px;font-weight:600;cursor:pointer;font-size:16px;list-style:none}
+  details.plegable > summary::-webkit-details-marker{display:none}
+  details.plegable > summary::after{content:" ▾";color:var(--suave)}
+  details.plegable[open] > summary::after{content:" ▴"}
+  details.plegable > div{padding:0 15px 15px}
+
+  .aviso{
+    background:var(--alerta-suave);border:1px solid var(--alerta);color:var(--alerta);
+    border-radius:10px;padding:13px 15px;font-size:14.5px;margin-bottom:14px;
+  }
+  .aviso b{display:block;margin-bottom:3px}
+  .aviso a{color:inherit}
+
+  .brindis{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(14px);
+    background:var(--tinta);color:var(--fondo);padding:12px 20px;border-radius:99px;
+    font-size:15px;font-weight:600;opacity:0;pointer-events:none;transition:.22s;z-index:60;
+    box-shadow:0 8px 24px rgba(0,0,0,.2);max-width:90vw;text-align:center;
+  }
+  .brindis.ver{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  table.horario{width:100%;border-collapse:collapse;font-size:14.5px}
+  table.horario td{padding:7px 0;border-bottom:1px solid var(--linea)}
+  table.horario td:last-child{text-align:right;color:var(--suave)}
+  table.horario tr:last-child td{border-bottom:none}
+
+  .nota-pie{color:var(--suave);font-size:13.5px;text-align:center;padding:8px 10px 0}
+  [hidden]{display:none !important}
+</style>
+</head>
+<body>
+
+<div class="envoltura">
+  <header class="cabecera">
+    <h1 id="tituloProyecto">Un Mensaje Para Ti</h1>
+    <p id="subtitulo">Cargando…</p>
+  </header>
+
+  <nav class="pestanas" role="tablist">
+    <button role="tab" data-vista="hoy" aria-selected="true">Hoy <span class="globo" id="globoHoy" hidden>0</span></button>
+    <button role="tab" data-vista="personas" aria-selected="false">Personas</button>
+    <button role="tab" data-vista="mensajes" aria-selected="false">Mensajes</button>
+    <button role="tab" data-vista="ajustes" aria-selected="false">Ajustes</button>
+  </nav>
+
+  <section id="vista-hoy"></section>
+  <section id="vista-personas" hidden></section>
+  <section id="vista-mensajes" hidden></section>
+  <section id="vista-ajustes" hidden></section>
+
+  <p class="nota-pie">
+    Todo se guarda solo en este dispositivo. Exporta una copia cada semana desde <b>Ajustes</b>.
+  </p>
+</div>
+
+<div class="brindis" id="brindis"></div>
+
+<script>
+"use strict";
+
+/* ─────────────────────────────────────────────────────────────
+   MENSAJES — biblioteca. Espejo de docs/MENSAJES.md.
+   Para agregar uno: copia una línea y cámbiale el texto.
+   ───────────────────────────────────────────────────────────── */
+const MENSAJES = [
+  {id:1,  t:"animo", x:"Hoy no tienes que poder con todo. Con lo de hoy basta."},
+  {id:2,  t:"animo", x:"Lo que estás construyendo todavía no se ve. Pero se está construyendo."},
+  {id:3,  t:"animo", x:"A veces solo sobrevivir el día ya es un logro. Y hoy lo estás haciendo."},
+  {id:4,  t:"animo", x:"Tu ritmo es tuyo. No tienes que ir a la velocidad de nadie más."},
+  {id:5,  t:"animo", x:"Ya saliste de días peores que este. Esa persona sigues siendo tú."},
+  {id:6,  t:"animo", x:"No necesitas sentirte fuerte para seguir. Solo necesitas seguir."},
+  {id:7,  t:"animo", x:"Un paso pequeño sigue siendo un paso."},
+  {id:8,  t:"animo", x:"Descansar también es avanzar."},
+  {id:9,  t:"animo", x:"Lo que hiciste hoy cuenta, aunque nadie lo haya visto."},
+  {id:10, t:"animo", x:"Empezar de nuevo no es retroceder."},
+
+  {id:11, t:"amistad", x:"Hola. Solo paso a recordarte que tu presencia en este mundo importa más de lo que imaginas."},
+  {id:12, t:"amistad", x:"Alguien se acordó de ti hoy sin que tuvieras que pedirlo."},
+  {id:13, t:"amistad", x:"Si nadie te lo ha dicho hoy: me da gusto que estés aquí."},
+  {id:14, t:"amistad", x:"Este mensaje no te pide nada. Solo viene a hacerte compañía un ratito."},
+  {id:15, t:"amistad", x:"Ojalá hoy te traten con la misma paciencia con la que tú tratas a los demás."},
+  {id:16, t:"amistad", x:"Hay alguien de este lado que te desea un buen día de verdad."},
+  {id:17, t:"amistad", x:"No hace falta que estés bien para merecer un buen mensaje."},
+  {id:18, t:"amistad", x:"Gracias por seguir aquí. En serio."},
+  {id:19, t:"amistad", x:"Si el día viene pesado, que este mensaje sea la parte ligera."},
+  {id:20, t:"amistad", x:"No estás en esto por tu cuenta hoy. Alguien pensó en ti."},
+
+  {id:21, t:"espiritual", x:"Que hoy encuentres paz aunque sea en algo pequeño."},
+  {id:22, t:"espiritual", x:"Hay un propósito en tu vida que no depende de lo que logres hoy."},
+  {id:23, t:"espiritual", x:"Que la calma te alcance antes que el cansancio."},
+  {id:24, t:"espiritual", x:"No estás fuera del cuidado de Dios, aunque hoy se sienta callado."},
+  {id:25, t:"espiritual", x:"Que este día te traiga una señal de que vas bien."},
+  {id:26, t:"espiritual", x:"Tu vida tiene un valor que no se mide en resultados."},
+  {id:27, t:"espiritual", x:"Que descanse el corazón, aunque el día siga."},
+  {id:28, t:"espiritual", x:"Hay bendiciones que llegan tarde. No que no llegan."},
+
+  {id:29, t:"gratitud", x:"Alguien es más feliz porque tú existes, aunque no te lo diga."},
+  {id:30, t:"gratitud", x:"Lo que das a los demás sí se nota. Hoy quiero que a ti también te llegue algo."},
+  {id:31, t:"gratitud", x:"Eres importante para alguien en este mundo. Empezando por quien te escribe esto."},
+  {id:32, t:"gratitud", x:"El mundo sería distinto sin ti. Más pobre y más callado."},
+  {id:33, t:"gratitud", x:"Gracias por lo que cargas en silencio."},
+  {id:34, t:"gratitud", x:"Tu manera de ser le hace bien a la gente. No la cambies por cansancio."},
+  {id:35, t:"gratitud", x:"Hoy te toca a ti recibir. Deja que este mensaje cuente."},
+  {id:36, t:"gratitud", x:"Si supieras cuántas veces has ayudado sin darte cuenta."},
+  {id:37, t:"gratitud", x:"Hay gente que está mejor hoy por algo que tú hiciste y ya ni recuerdas."},
+
+  {id:38, t:"dificil", x:"No tienes que explicarle a nadie por qué hoy fue difícil."},
+  {id:39, t:"dificil", x:"Está bien no estar bien hoy. Mañana es otro intento."},
+  {id:40, t:"dificil", x:"Llorar no es rendirse. Es descansar de otra forma."},
+  {id:41, t:"dificil", x:"Si hoy solo puedes respirar, respira. Por ahora eso es suficiente."},
+  {id:42, t:"dificil", x:"El dolor de hoy no es la medida de tu vida entera."},
+  {id:43, t:"dificil", x:"No te apures en sentirte mejor. Vas a tu tiempo."},
+  {id:44, t:"dificil", x:"Lo estás haciendo mejor de lo que crees, aunque hoy no se sienta."},
+
+  {id:45, t:"cumple", x:"¡Feliz cumpleaños! Hoy el mundo celebra que llegaste."},
+  {id:46, t:"cumple", x:"Feliz cumpleaños. Que este año te trate con cariño."},
+  {id:47, t:"cumple", x:"Feliz cumpleaños. Que hoy no se te olvide lo que vales."},
+];
+
+const TIPOS = {
+  animo:      "Ánimo",
+  amistad:    "Compañía",
+  espiritual: "Espiritual",
+  gratitud:   "Valor y gratitud",
+  dificil:    "Días difíciles",
+  cumple:     "Cumpleaños",
+};
+
+const FRECUENCIAS = {
+  diaria:  "Todos los días",
+  tres:    "Lunes, miércoles y viernes",
+  semanal: "Una vez por semana",
+};
+
+const DIAS = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+
+const NOTA_BAJA = "Si en algún momento prefieres dejar de recibirlos, solo dime BAJA y se detiene. Sin explicaciones.";
+const CADA_CUANTAS_NOTAS_DE_BAJA = 8;
+
+/* ─────────────────────────────────────────────────────────────
+   Estado guardado en el dispositivo
+   ───────────────────────────────────────────────────────────── */
+const LLAVE = "unmensajeparati.v1";
+
+const AJUSTES_INICIALES = {
+  nombreProyecto: "Un Mensaje Para Ti",
+  firma: "Un Mensaje Para Ti",
+  lada: "+52",
+  canal: "whatsapp",
+};
+
+let estado = cargar();
+let vistaActual = "hoy";
+let variantes = {};   // personaId -> cuántas veces se pidió "otro mensaje" hoy
+let borradores = {};  // personaId -> texto editado a mano
+
+function cargar(){
+  try{
+    const crudo = localStorage.getItem(LLAVE);
+    if(crudo){
+      const d = JSON.parse(crudo);
+      return { personas: d.personas || [], ajustes: Object.assign({}, AJUSTES_INICIALES, d.ajustes || {}) };
+    }
+  }catch(e){ /* almacenamiento bloqueado o dato corrupto: se arranca en limpio */ }
+  return { personas: [], ajustes: Object.assign({}, AJUSTES_INICIALES) };
+}
+
+function guardar(){
+  try{
+    localStorage.setItem(LLAVE, JSON.stringify({version:1, personas:estado.personas, ajustes:estado.ajustes}));
+  }catch(e){
+    brindar("No se pudo guardar en este navegador");
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Fechas y utilerías
+   ───────────────────────────────────────────────────────────── */
+function hoyISO(d){
+  const f = d || new Date();
+  return f.getFullYear() + "-" + String(f.getMonth()+1).padStart(2,"0") + "-" + String(f.getDate()).padStart(2,"0");
+}
+function hoyMMDD(){ return hoyISO().slice(5); }
+
+function fechaBonita(iso){
+  if(!iso) return "";
+  const [a,m,d] = iso.split("-").map(Number);
+  const f = new Date(a, m-1, d);
+  return f.toLocaleDateString("es-MX", {day:"numeric", month:"long", year:"numeric"});
+}
+
+function escapar(s){
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function idNuevo(){ return "p" + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function revoltura(txt){ // número estable a partir de un texto — para no barajar el mensaje en cada refresco
+  let h = 0;
+  for(let i=0;i<txt.length;i++){ h = (h*31 + txt.charCodeAt(i)) >>> 0; }
+  return h;
+}
+
+function brindar(texto){
+  const b = document.getElementById("brindis");
+  b.textContent = texto;
+  b.classList.add("ver");
+  clearTimeout(brindar._t);
+  brindar._t = setTimeout(()=>b.classList.remove("ver"), 2600);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Reglas: a quién le toca hoy
+   ───────────────────────────────────────────────────────────── */
+function esCumple(p){
+  return !!p.cumple && p.cumple.slice(5) === hoyMMDD();
+}
+
+function leTocaHoy(p){
+  if(!p.activo) return false;
+  if(p.pausadoHasta && p.pausadoHasta >= hoyISO()) return false;
+  if(p.historial.some(h => h.fecha === hoyISO())) return false;
+  if(esCumple(p)) return true;
+
+  const diaHoy = new Date().getDay();
+  if(p.frecuencia === "diaria")  return true;
+  if(p.frecuencia === "tres")    return diaHoy === 1 || diaHoy === 3 || diaHoy === 5;
+  if(p.frecuencia === "semanal") return diaHoy === p.diaSemanal;
+  return false;
+}
+
+function motivoNoToca(p){
+  if(!p.activo) return "dada de baja";
+  if(p.pausadoHasta && p.pausadoHasta >= hoyISO()) return "en pausa hasta el " + fechaBonita(p.pausadoHasta);
+  if(p.historial.some(h => h.fecha === hoyISO())) return "ya recibió el de hoy";
+  if(p.frecuencia === "tres")    return "le toca lunes, miércoles y viernes";
+  if(p.frecuencia === "semanal") return "le toca los " + DIAS[p.diaSemanal];
+  return "sin envío pendiente";
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Elegir el mensaje
+   ───────────────────────────────────────────────────────────── */
+function elegirMensaje(p){
+  const cumple = esCumple(p);
+  const tipos  = cumple ? ["cumple"] : (p.tipos.length ? p.tipos : ["animo","amistad"]);
+
+  let posibles = MENSAJES.filter(m => tipos.includes(m.t));
+  if(!posibles.length) posibles = MENSAJES.filter(m => m.t !== "cumple");
+
+  // No repetir lo reciente. Si ya se agotaron, se reinicia la vuelta.
+  const recientes = p.historial.slice(-Math.min(20, Math.max(1, posibles.length - 1))).map(h => h.mensajeId);
+  const frescos = posibles.filter(m => !recientes.includes(m.id));
+  const bolsa = frescos.length ? frescos : posibles;
+
+  const salto = variantes[p.id] || 0;
+  const i = (revoltura(p.id + hoyISO()) + salto) % bolsa.length;
+  return bolsa[i];
+}
+
+// "Don Ernesto" no se saluda como "Don". Los tratamientos se quedan pegados al nombre.
+const TRATAMIENTOS = ["don","dona","doña","sr","sr.","sra","sra.","srta","srta.","senor","señor","senora",
+                      "señora","padre","madre","hermano","hermana","tio","tío","tia","tía","abuelo","abuela",
+                      "doctor","doctora","dr","dr.","dra","dra.","maestro","maestra","profe"];
+
+function nombreDeSaludo(completo){
+  const palabras = String(completo || "").trim().split(/\s+/).filter(Boolean);
+  if(!palabras.length) return "";
+  const primera = palabras[0].toLowerCase();
+  if(palabras.length > 1 && TRATAMIENTOS.includes(primera)) return palabras[0] + " " + palabras[1];
+  return palabras[0];
+}
+
+function armarTexto(p, mensaje){
+  const nombre = nombreDeSaludo(p.nombre);
+  const partes = [];
+  partes.push(nombre ? "Hola, " + nombre + "." : "Hola.");
+  partes.push(mensaje.x);
+  if(estado.ajustes.firma.trim()) partes.push("— " + estado.ajustes.firma.trim());
+  if(p.historial.length > 0 && p.historial.length % CADA_CUANTAS_NOTAS_DE_BAJA === 0) partes.push(NOTA_BAJA);
+  return partes.join("\n\n");
+}
+
+function telefonoLimpio(p){
+  const solo = String(p.telefono || "").replace(/\D/g, "");
+  if(!solo) return "";
+  const lada = String(estado.ajustes.lada || "").replace(/\D/g, "");
+  // Si ya trae la lada del país al inicio, o es más largo que un número local, se deja tal cual.
+  if(!lada || solo.startsWith(lada) || solo.length > 11) return solo;
+  return lada + solo;
+}
+
+function ligaEnvio(p, texto){
+  const num = telefonoLimpio(p);
+  if(estado.ajustes.canal === "sms"){
+    return "sms:" + (num ? "+" + num : "") + "?&body=" + encodeURIComponent(texto);
+  }
+  return "https://wa.me/" + num + "?text=" + encodeURIComponent(texto);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Acciones
+   ───────────────────────────────────────────────────────────── */
+function marcarEnviado(id, mensajeId){
+  const p = estado.personas.find(x => x.id === id);
+  if(!p) return;
+  if(p.historial.some(h => h.fecha === hoyISO())) return;
+  p.historial.push({fecha: hoyISO(), mensajeId: mensajeId});
+  delete borradores[id];
+  delete variantes[id];
+  guardar(); pintar();
+  brindar("Enviado a " + p.nombre + " ✓");
+}
+
+function otroMensaje(id){
+  variantes[id] = (variantes[id] || 0) + 1;
+  delete borradores[id];
+  pintar();
+}
+
+function pausar(id){
+  const p = estado.personas.find(x => x.id === id);
+  if(!p) return;
+  const dias = prompt("¿Cuántos días quiere pausar los mensajes de " + p.nombre + "?\n\n(Escribe un número. Su lugar se guarda.)", "7");
+  if(dias === null) return;
+  const n = parseInt(dias, 10);
+  if(!(n > 0)){ brindar("Escribe un número de días"); return; }
+  const f = new Date(); f.setDate(f.getDate() + n);
+  p.pausadoHasta = hoyISO(f);
+  guardar(); pintar();
+  brindar(p.nombre + " en pausa " + n + " días");
+}
+
+function reanudar(id){
+  const p = estado.personas.find(x => x.id === id);
+  if(!p) return;
+  p.pausadoHasta = null; p.activo = true;
+  guardar(); pintar();
+  brindar("Se reanudan los mensajes de " + p.nombre);
+}
+
+function darDeBaja(id){
+  const p = estado.personas.find(x => x.id === id);
+  if(!p) return;
+  const ok = confirm("Dar de baja a " + p.nombre + " y borrar su teléfono.\n\nEsto no se puede deshacer. Es lo correcto cuando alguien pide salir.\n\n¿Continuar?");
+  if(!ok) return;
+  estado.personas = estado.personas.filter(x => x.id !== id);
+  guardar(); pintar();
+  brindar("Se dio de baja a " + p.nombre);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Vista: Hoy
+   ───────────────────────────────────────────────────────────── */
+function pintarHoy(){
+  const cont = document.getElementById("vista-hoy");
+  const todos = estado.personas;
+
+  if(!todos.length){
+    cont.innerHTML = `
+      <div class="tarjeta vacio">
+        <strong>Todavía no hay nadie registrado</strong>
+        Empieza con 5 o 10 personas que ya te dijeron que sí.
+        <div class="botones" style="justify-content:center;margin-top:16px">
+          <button class="b principal" onclick="irA('personas')" style="flex:0">Registrar a la primera persona</button>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const tocan = todos.filter(leTocaHoy);
+  const enviadosHoy = todos.filter(p => p.historial.some(h => h.fecha === hoyISO()));
+
+  let html = "";
+
+  if(!tocan.length){
+    html += `
+      <div class="tarjeta vacio">
+        <strong>Ya no falta nadie por hoy</strong>
+        ${enviadosHoy.length ? "Mandaste " + enviadosHoy.length + " mensaje" + (enviadosHoy.length===1?"":"s") + " hoy. Gracias." : "Hoy no le toca a nadie según las frecuencias que pidieron."}
+      </div>`;
+  }
+
+  tocan.forEach(p => {
+    const m = elegirMensaje(p);
+    const texto = borradores[p.id] !== undefined ? borradores[p.id] : armarTexto(p, m);
+    const cumple = esCumple(p);
+    const nunca = p.historial.length === 0;
+
+    html += `
+      <div class="tarjeta">
+        <div class="quien">
+          <span class="nombre">${escapar(p.nombre)}</span>
+          ${cumple ? '<span class="etiqueta alerta">Cumple años hoy</span>' : ''}
+          ${nunca ? '<span class="etiqueta verde">Primer mensaje</span>' : ''}
+          <span class="etiqueta gris">${escapar(TIPOS[m.t] || m.t)}</span>
+          ${p.nota ? '<span class="etiqueta gris">' + escapar(p.nota) + '</span>' : ''}
+        </div>
+        <textarea class="borrador" data-borrador="${p.id}"
+          aria-label="Mensaje para ${escapar(p.nombre)}">${escapar(texto)}</textarea>
+        <div class="botones">
+          <button class="b principal" data-enviar="${p.id}" data-mensaje="${m.id}">
+            Abrir en ${estado.ajustes.canal === "sms" ? "mensajes" : "WhatsApp"}
+          </button>
+          <button class="b" data-otro="${p.id}">Otro mensaje</button>
+          <button class="b tenue" data-hecho="${p.id}" data-mensaje="${m.id}">Ya lo mandé</button>
+          <button class="b tenue" data-pausa="${p.id}">Pausar</button>
+        </div>
+      </div>`;
+  });
+
+  if(enviadosHoy.length){
+    html += `
+      <details class="plegable">
+        <summary>Enviados hoy (${enviadosHoy.length})</summary>
+        <div><ul class="lista">` +
+          enviadosHoy.map(p => `<li><div class="datos"><b>${escapar(p.nombre)}</b>
+            <small>${escapar((MENSAJES.find(m => m.id === p.historial[p.historial.length-1].mensajeId) || {x:""}).x)}</small></div></li>`).join("") +
+        `</ul></div>
+      </details>`;
+  }
+
+  cont.innerHTML = html;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Vista: Personas
+   ───────────────────────────────────────────────────────────── */
+function pintarPersonas(){
+  const cont = document.getElementById("vista-personas");
+  const ps = estado.personas.slice().sort((a,b) => a.nombre.localeCompare(b.nombre, "es"));
+
+  let lista = "";
+  if(ps.length){
+    lista = `<div class="tarjeta"><h2>Registradas (${ps.length})</h2><ul class="lista">` +
+      ps.map(p => {
+        const pausada = p.pausadoHasta && p.pausadoHasta >= hoyISO();
+        const ultimo = p.historial.length ? p.historial[p.historial.length-1].fecha : null;
+        return `<li>
+          <div class="datos">
+            <b>${escapar(p.nombre)}</b>
+            <small>${escapar(FRECUENCIAS[p.frecuencia] || p.frecuencia)}
+              · ${p.tipos.map(t => escapar(TIPOS[t] || t)).join(", ") || "sin preferencia"}</small>
+            <small>${p.historial.length} enviado${p.historial.length===1?"":"s"}${ultimo ? " · último el " + fechaBonita(ultimo) : " · aún ninguno"}${pausada ? " · <b>en pausa</b>" : ""}</small>
+          </div>
+          <div class="botones" style="margin:0;flex:none">
+            ${pausada
+              ? `<button class="b" data-reanudar="${p.id}">Reanudar</button>`
+              : `<button class="b tenue" data-pausa="${p.id}">Pausar</button>`}
+            <button class="b peligro" data-baja="${p.id}">Baja</button>
+          </div>
+        </li>`;
+      }).join("") +
+    `</ul></div>`;
+  }
+
+  cont.innerHTML = `
+    <div class="aviso">
+      <b>Antes de registrar a alguien</b>
+      Pregúntale directamente si quiere recibir los mensajes y espera un sí claro.
+      Que otra persona te haya dado su número no es permiso.
+    </div>
+
+    <details class="plegable" id="cajaAlta" ${ps.length ? "" : "open"}>
+      <summary>Registrar a una persona</summary>
+      <div>
+        <form id="formAlta">
+          <label class="campo"><span>Nombre <span class="pista">— como le dicen</span></span>
+            <input type="text" name="nombre" required autocomplete="off" placeholder="Rosa"></label>
+
+          <label class="campo"><span>Teléfono <span class="pista">— con lada si es de otro país</span></span>
+            <input type="tel" name="telefono" required autocomplete="off" placeholder="55 1234 5678"></label>
+
+          <div class="fila">
+            <label class="campo"><span>Cada cuándo</span>
+              <select name="frecuencia">
+                <option value="tres">Lunes, miércoles y viernes</option>
+                <option value="diaria">Todos los días</option>
+                <option value="semanal">Una vez por semana</option>
+              </select></label>
+            <label class="campo"><span>Cumpleaños <span class="pista">— opcional</span></span>
+              <input type="date" name="cumple"></label>
+          </div>
+
+          <label class="campo"><span>Qué tipo de mensaje pidió</span></label>
+          <div class="casillas" style="margin-bottom:14px">
+            ${["animo","amistad","gratitud","espiritual","dificil"].map(t =>
+              `<label><input type="checkbox" name="tipos" value="${t}" ${t==="animo"||t==="amistad"?"checked":""}> ${TIPOS[t]}</label>`).join("")}
+          </div>
+
+          <label class="campo"><span>Nota corta <span class="pista">— opcional, suave y sin detalles delicados</span></span>
+            <input type="text" name="nota" maxlength="40" autocomplete="off" placeholder="anda pasando por algo difícil"></label>
+
+          <div class="consentimiento">
+            <label>
+              <input type="checkbox" name="consent" required>
+              <span>Le pregunté directamente y me dijo que sí. Sabe que puede pedir baja cuando quiera
+              y que esto no reemplaza atención médica ni psicológica.</span>
+            </label>
+          </div>
+
+          <div class="botones">
+            <button type="submit" class="b principal">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </details>
+
+    ${lista}`;
+
+  const form = document.getElementById("formAlta");
+  form.addEventListener("submit", ev => {
+    ev.preventDefault();
+    const d = new FormData(form);
+    const nombre = String(d.get("nombre") || "").trim();
+    const telefono = String(d.get("telefono") || "").trim();
+    if(!nombre || !telefono){ brindar("Falta el nombre o el teléfono"); return; }
+
+    estado.personas.push({
+      id: idNuevo(),
+      nombre, telefono,
+      frecuencia: d.get("frecuencia") || "tres",
+      tipos: d.getAll("tipos"),
+      cumple: d.get("cumple") || null,
+      nota: String(d.get("nota") || "").trim(),
+      diaSemanal: new Date().getDay(),
+      consentimiento: hoyISO(),
+      activo: true,
+      pausadoHasta: null,
+      historial: [],
+      creado: hoyISO(),
+    });
+    guardar();
+    form.reset();
+    document.getElementById("cajaAlta").open = false;
+    pintar();
+    brindar(nombre + " quedó registrada ✓");
+  });
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Vista: Mensajes
+   ───────────────────────────────────────────────────────────── */
+function pintarMensajes(){
+  const cont = document.getElementById("vista-mensajes");
+  const usados = {};
+  estado.personas.forEach(p => p.historial.forEach(h => { usados[h.mensajeId] = (usados[h.mensajeId] || 0) + 1; }));
+
+  cont.innerHTML = `
+    <div class="tarjeta">
+      <h2>La biblioteca</h2>
+      <p style="color:var(--suave);font-size:15px;margin:0">
+        ${MENSAJES.length} mensajes. La app nunca repite uno hasta agotar los demás de ese tipo,
+        y siempre puedes editar el texto antes de enviarlo.
+      </p>
+    </div>` +
+    Object.keys(TIPOS).map(t => {
+      const grupo = MENSAJES.filter(m => m.t === t);
+      if(!grupo.length) return "";
+      return `<details class="plegable">
+        <summary>${TIPOS[t]} (${grupo.length})</summary>
+        <div>` + grupo.map(m =>
+          `<div class="mensaje-item">${escapar(m.x)}
+            <small>${usados[m.id] ? "enviado " + usados[m.id] + " ve" + (usados[m.id]===1?"z":"ces") : "aún sin usar"}</small>
+          </div>`).join("") +
+        `</div></details>`;
+    }).join("") + `
+    <div class="tarjeta">
+      <h2>Para agregar más</h2>
+      <p style="color:var(--suave);font-size:15px;margin:0">
+        Los mensajes viven en la lista <b>MENSAJES</b> dentro de este mismo archivo, y en
+        <b>docs/MENSAJES.md</b>. Cópialos de una línea existente y cámbiale el texto.
+        Antes de agregar uno, léelo en voz alta: si suena a frase de calendario, no sirve.
+      </p>
+    </div>`;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Vista: Ajustes
+   ───────────────────────────────────────────────────────────── */
+function pintarAjustes(){
+  const cont = document.getElementById("vista-ajustes");
+  const a = estado.ajustes;
+  const total = estado.personas.reduce((n,p) => n + p.historial.length, 0);
+
+  cont.innerHTML = `
+    <div class="tarjeta">
+      <h2>Cómo se manda</h2>
+      <div class="fila">
+        <label class="campo"><span>Por dónde</span>
+          <select id="ajCanal">
+            <option value="whatsapp" ${a.canal==="whatsapp"?"selected":""}>WhatsApp</option>
+            <option value="sms" ${a.canal==="sms"?"selected":""}>Mensaje de texto (SMS)</option>
+          </select></label>
+        <label class="campo"><span>Lada del país</span>
+          <input type="text" id="ajLada" value="${escapar(a.lada)}" placeholder="+52"></label>
+      </div>
+      <label class="campo"><span>Firma <span class="pista">— cómo termina cada mensaje</span></span>
+        <input type="text" id="ajFirma" value="${escapar(a.firma)}"></label>
+      <div class="botones"><button class="b principal" id="guardarAjustes">Guardar ajustes</button></div>
+    </div>
+
+    <div class="tarjeta">
+      <h2>Copia de respaldo</h2>
+      <p style="color:var(--suave);font-size:15px;margin:0 0 12px">
+        Todo vive solo en este dispositivo. Si se pierde el teléfono, se pierde la lista.
+        Exporta una vez por semana y guarda el archivo en un lugar con contraseña —
+        contiene números de teléfono, así que no lo mandes por chat ni por correo.
+      </p>
+      <div class="botones">
+        <button class="b principal" id="exportar">Exportar copia</button>
+        <button class="b" id="importar">Restaurar de un archivo</button>
+      </div>
+      <input type="file" id="archivo" accept="application/json" hidden>
+    </div>
+
+    <div class="tarjeta">
+      <h2>Cómo va</h2>
+      <table class="horario">
+        <tr><td>Personas registradas</td><td>${estado.personas.length}</td></tr>
+        <tr><td>Mensajes enviados en total</td><td>${total}</td></tr>
+        <tr><td>En pausa</td><td>${estado.personas.filter(p => p.pausadoHasta && p.pausadoHasta >= hoyISO()).length}</td></tr>
+        <tr><td>Sin recibir todavía</td><td>${estado.personas.filter(p => !p.historial.length).length}</td></tr>
+      </table>
+    </div>
+
+    <div class="aviso">
+      <b>Si alguien responde algo grave</b>
+      Contesta como persona y pronto, aunque no sepas qué decir. No lo cargues solo: avísale
+      hoy mismo a quien coordina. Pausa sus mensajes programados antes de que le llegue uno
+      alegre encima. Y pásale una línea de ayuda sin cortarle la conversación.
+      <div style="margin-top:9px">
+        México · Línea de la Vida <b>800 911 2000</b><br>
+        Estados Unidos · <b>988</b>, con atención en español<br>
+        Si hay riesgo en este momento · <b>911</b>
+      </div>
+      <div style="margin-top:9px">Verifica estos números en tu país cada seis meses.</div>
+    </div>`;
+
+  document.getElementById("guardarAjustes").onclick = () => {
+    a.canal = document.getElementById("ajCanal").value;
+    a.lada  = document.getElementById("ajLada").value.trim();
+    a.firma = document.getElementById("ajFirma").value.trim();
+    guardar(); pintar();
+    brindar("Ajustes guardados ✓");
+  };
+
+  document.getElementById("exportar").onclick = () => {
+    const blob = new Blob([JSON.stringify({version:1, exportado:hoyISO(), personas:estado.personas, ajustes:estado.ajustes}, null, 2)],
+                          {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const liga = document.createElement("a");
+    liga.href = url;
+    liga.download = "un-mensaje-para-ti-" + hoyISO() + ".json";
+    liga.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    brindar("Copia descargada");
+  };
+
+  const archivo = document.getElementById("archivo");
+  document.getElementById("importar").onclick = () => archivo.click();
+  archivo.onchange = () => {
+    const f = archivo.files[0];
+    if(!f) return;
+    const lector = new FileReader();
+    lector.onload = () => {
+      try{
+        const d = JSON.parse(lector.result);
+        if(!Array.isArray(d.personas)) throw new Error("formato");
+        if(!confirm("Esto reemplaza la lista actual (" + estado.personas.length + " personas) por la del archivo (" + d.personas.length + "). ¿Continuar?")) return;
+        estado.personas = d.personas;
+        estado.ajustes = Object.assign({}, AJUSTES_INICIALES, d.ajustes || {});
+        guardar(); pintar();
+        brindar("Restaurado: " + d.personas.length + " personas");
+      }catch(e){
+        brindar("Ese archivo no se pudo leer");
+      }
+      archivo.value = "";
+    };
+    lector.readAsText(f);
+  };
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Armado general
+   ───────────────────────────────────────────────────────────── */
+function irA(vista){
+  vistaActual = vista;
+  document.querySelectorAll("nav.pestanas button").forEach(b =>
+    b.setAttribute("aria-selected", String(b.dataset.vista === vista)));
+  ["hoy","personas","mensajes","ajustes"].forEach(v =>
+    document.getElementById("vista-" + v).hidden = (v !== vista));
+  pintar();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function pintar(){
+  document.getElementById("tituloProyecto").textContent = estado.ajustes.nombreProyecto;
+
+  const pendientes = estado.personas.filter(leTocaHoy).length;
+  const globo = document.getElementById("globoHoy");
+  globo.textContent = pendientes;
+  globo.hidden = pendientes === 0;
+
+  const f = new Date();
+  document.getElementById("subtitulo").textContent =
+    DIAS[f.getDay()].charAt(0).toUpperCase() + DIAS[f.getDay()].slice(1) + " · " +
+    (pendientes ? pendientes + " por mandar" : "nada pendiente");
+
+  if(vistaActual === "hoy")      pintarHoy();
+  if(vistaActual === "personas") pintarPersonas();
+  if(vistaActual === "mensajes") pintarMensajes();
+  if(vistaActual === "ajustes")  pintarAjustes();
+}
+
+document.querySelectorAll("nav.pestanas button").forEach(b =>
+  b.addEventListener("click", () => irA(b.dataset.vista)));
+
+// Un solo escucha para todo lo que se pinta y repinta.
+document.addEventListener("click", ev => {
+  const b = ev.target.closest("button");
+  if(!b) return;
+  if(b.dataset.enviar){
+    const p = estado.personas.find(x => x.id === b.dataset.enviar);
+    if(!p) return;
+    const caja = document.querySelector('[data-borrador="' + p.id + '"]');
+    const texto = caja ? caja.value : "";
+    if(!texto.trim()){ brindar("El mensaje está vacío"); return; }
+    window.open(ligaEnvio(p, texto), "_blank", "noopener");
+    marcarEnviado(p.id, Number(b.dataset.mensaje));
+  }
+  else if(b.dataset.hecho)    marcarEnviado(b.dataset.hecho, Number(b.dataset.mensaje));
+  else if(b.dataset.otro)     otroMensaje(b.dataset.otro);
+  else if(b.dataset.pausa)    pausar(b.dataset.pausa);
+  else if(b.dataset.reanudar) reanudar(b.dataset.reanudar);
+  else if(b.dataset.baja)     darDeBaja(b.dataset.baja);
+});
+
+// Conservar lo que la persona editó a mano mientras no se repinte.
+document.addEventListener("input", ev => {
+  const t = ev.target;
+  if(t.dataset && t.dataset.borrador) borradores[t.dataset.borrador] = t.value;
+});
+
+pintar();
+</script>
+</body>
+</html>
