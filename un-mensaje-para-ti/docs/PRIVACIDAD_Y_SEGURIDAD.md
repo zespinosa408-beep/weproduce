@@ -47,7 +47,7 @@ Guarda la fecha en que cada persona aceptó. La app lo hace sola.
 2. **Los voluntarios ven solo a los suyos.** Nadie necesita la lista completa.
 3. **Se manda uno por uno.** Nunca un grupo de WhatsApp ni una lista de difusión donde se vean unos a otros. Que dos personas del proyecto se enteren de que la otra existe ya es filtrar información.
 4. **Baja es baja.** Cuando alguien pide salir, se borra su número ese mismo día. No se guarda "por si regresa".
-5. **Copia de respaldo.** La app guarda todo en el propio dispositivo, así que si se pierde el teléfono se pierde la lista. Usa el botón **Exportar** una vez por semana y guarda el archivo en un lugar con contraseña. Ese archivo tiene números de teléfono: no lo mandes por correo ni por chat.
+5. **Copia de respaldo.** La app guarda todo en el propio dispositivo, así que si se pierde el teléfono se pierde la lista. Usa el botón **Exportar** una vez por semana. Según dónde tengas abierta la app, la copia se descarga como archivo, queda en el portapapeles, o aparece en texto para que la selecciones — cualquiera de las tres sirve. Guárdala en un lugar con contraseña. Esa copia tiene números de teléfono: no la mandes por correo ni por chat.
 
 ---
 

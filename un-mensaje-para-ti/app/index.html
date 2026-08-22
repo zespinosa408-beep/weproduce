@@ -4,155 +4,277 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Un Mensaje Para Ti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&display=swap">
 <style>
   :root{
-    --fondo:#fbf7f2; --papel:#ffffff; --tinta:#2c2622; --suave:#6f645c;
-    --linea:#e8ded2; --acento:#b4552d; --acento-suave:#fdeee6;
-    --verde:#2f6b46; --verde-suave:#e9f3ec;
-    --alerta:#8a4b12; --alerta-suave:#fdf1e0;
-    --radio:14px; --sombra:0 1px 2px rgba(44,38,34,.06), 0 6px 20px rgba(44,38,34,.05);
+    --papel:#f4f6f9;
+    --hoja:#ffffff;
+    --tinta:#161d2e;
+    --apagado:#5f6a80;
+    --linea:#dfe4ec;
+    --pluma:#2a3f9d;
+    --pluma-tenue:#e8ecfb;
+    --burbuja:#eef1f8;
+    --oro:#8a6410;      --oro-tenue:#fbf1dc;
+    --verde:#1f6b4e;    --verde-tenue:#e3f2ea;
+    --rosa:#b3324f;     --rosa-tenue:#fceaee;
+    --curva:12px;
+    --relieve:0 1px 1px rgba(22,29,46,.04), 0 8px 24px -12px rgba(22,29,46,.14);
+    --display:"Fraunces",Georgia,"Times New Roman",serif;
+    --texto:"Karla",-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   }
   @media (prefers-color-scheme: dark){
-    :root{
-      --fondo:#1a1613; --papel:#241f1b; --tinta:#f2ece5; --suave:#a99c91;
-      --linea:#3a322c; --acento:#e8875a; --acento-suave:#3a2419;
-      --verde:#7fc79a; --verde-suave:#1e2f24;
-      --alerta:#e0a468; --alerta-suave:#332512;
-      --sombra:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.25);
+    :root:not([data-theme="light"]){
+      --papel:#12151d;
+      --hoja:#1a1f2b;
+      --tinta:#e9ecf4;
+      --apagado:#98a1b5;
+      --linea:#2b3242;
+      --pluma:#8fa4ff;
+      --pluma-tenue:#212a47;
+      --burbuja:#232a3a;
+      --oro:#e2b662;    --oro-tenue:#33270f;
+      --verde:#7cc9a4;  --verde-tenue:#15281f;
+      --rosa:#f0839a;   --rosa-tenue:#341721;
+      --relieve:0 1px 1px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
     }
   }
+  :root[data-theme="dark"]{
+    --papel:#12151d;
+    --hoja:#1a1f2b;
+    --tinta:#e9ecf4;
+    --apagado:#98a1b5;
+    --linea:#2b3242;
+    --pluma:#8fa4ff;
+    --pluma-tenue:#212a47;
+    --burbuja:#232a3a;
+    --oro:#e2b662;    --oro-tenue:#33270f;
+    --verde:#7cc9a4;  --verde-tenue:#15281f;
+    --rosa:#f0839a;   --rosa-tenue:#341721;
+    --relieve:0 1px 1px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   body{
-    background:var(--fondo); color:var(--tinta);
-    font:17px/1.55 ui-rounded,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    background:var(--papel); color:var(--tinta);
+    font:400 17px/1.55 var(--texto);
     -webkit-text-size-adjust:100%;
+    -webkit-font-smoothing:antialiased;
   }
-  .envoltura{max-width:720px;margin:0 auto;padding:0 16px 120px}
+  .envoltura{max-width:680px;margin:0 auto;padding:0 16px 96px}
 
-  header.cabecera{padding:22px 0 14px;text-align:center}
-  header.cabecera h1{margin:0;font-size:23px;letter-spacing:-.01em;font-weight:700}
-  header.cabecera p{margin:4px 0 0;color:var(--suave);font-size:14px}
+  :where(a,button,input,select,textarea,summary):focus-visible{
+    outline:2px solid var(--pluma); outline-offset:2px; border-radius:6px;
+  }
 
+  /* ── Encabezado ───────────────────────────────────────── */
+  header.cabecera{padding:26px 0 16px;text-align:center}
+  header.cabecera h1{
+    margin:0; font:600 27px/1.15 var(--display);
+    font-variation-settings:"opsz" 40,"SOFT" 30;
+    letter-spacing:-.012em; text-wrap:balance;
+  }
+  header.cabecera p{
+    margin:6px 0 0; color:var(--apagado); font-size:14px;
+    letter-spacing:.02em; font-variant-numeric:tabular-nums;
+  }
+
+  /* ── Pestañas ─────────────────────────────────────────── */
   nav.pestanas{
-    position:sticky;top:0;z-index:20;background:var(--fondo);
-    display:flex;gap:6px;padding:8px 0 10px;border-bottom:1px solid var(--linea);margin-bottom:18px;
+    position:sticky; top:0; z-index:20;
+    display:flex; gap:2px; padding:8px 0 9px; margin-bottom:20px;
+    background:var(--papel); border-bottom:1px solid var(--linea);
   }
   nav.pestanas button{
-    flex:1;padding:11px 4px;font:inherit;font-size:15px;font-weight:600;
-    background:transparent;color:var(--suave);border:1px solid transparent;
-    border-radius:10px;cursor:pointer;
+    flex:1; padding:10px 3px; cursor:pointer;
+    font:600 15px/1.2 var(--texto); letter-spacing:.005em;
+    background:transparent; color:var(--apagado);
+    border:0; border-radius:9px;
   }
-  nav.pestanas button[aria-selected="true"]{background:var(--acento-suave);color:var(--acento);}
-  nav.pestanas .globo{
-    display:inline-block;min-width:20px;padding:0 5px;margin-left:5px;
-    background:var(--acento);color:#fff;border-radius:99px;font-size:12px;line-height:19px;
+  nav.pestanas button:hover{color:var(--tinta)}
+  nav.pestanas button[aria-selected="true"]{background:var(--pluma-tenue); color:var(--pluma)}
+  .globo{
+    display:inline-block; min-width:19px; margin-left:5px; padding:0 5px;
+    background:var(--pluma); color:var(--hoja);
+    border-radius:99px; font:700 12px/19px var(--texto);
+    font-variant-numeric:tabular-nums;
   }
-  nav.pestanas button[aria-selected="true"] .globo{background:var(--acento)}
 
+  /* ── Tarjetas ─────────────────────────────────────────── */
   .tarjeta{
-    background:var(--papel);border:1px solid var(--linea);border-radius:var(--radio);
-    padding:18px;margin-bottom:14px;box-shadow:var(--sombra);
+    background:var(--hoja); border:1px solid var(--linea); border-radius:var(--curva);
+    padding:18px; margin-bottom:14px; box-shadow:var(--relieve);
   }
-  .tarjeta h2{margin:0 0 4px;font-size:18px}
-  .tarjeta .quien{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-  .tarjeta .quien .nombre{font-size:20px;font-weight:700}
+  .tarjeta h2{
+    margin:0 0 10px; font:600 18px/1.25 var(--display);
+    font-variation-settings:"opsz" 24,"SOFT" 20;
+  }
+  .tarjeta p.acota{margin:0; color:var(--apagado); font-size:15px}
+
+  .quien{display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; margin-bottom:13px}
+  .quien .nombre{
+    font:600 21px/1.2 var(--display);
+    font-variation-settings:"opsz" 30,"SOFT" 30;
+    letter-spacing:-.01em; margin-right:2px;
+  }
+
   .etiqueta{
-    display:inline-block;padding:2px 9px;border-radius:99px;font-size:12.5px;font-weight:600;
-    background:var(--acento-suave);color:var(--acento);
+    display:inline-block; padding:3px 9px; border-radius:6px;
+    font:600 12.5px/1.35 var(--texto); letter-spacing:.02em;
+    background:var(--burbuja); color:var(--apagado);
   }
-  .etiqueta.gris{background:var(--linea);color:var(--suave)}
-  .etiqueta.verde{background:var(--verde-suave);color:var(--verde)}
-  .etiqueta.alerta{background:var(--alerta-suave);color:var(--alerta)}
+  .etiqueta.oro{background:var(--oro-tenue); color:var(--oro)}
+  .etiqueta.verde{background:var(--verde-tenue); color:var(--verde)}
+  .etiqueta.nota{background:transparent; color:var(--apagado); padding-left:0; font-weight:400; font-style:italic}
 
+  /* ── La burbuja: el borrador con la forma del mensaje ── */
+  .burbuja{position:relative; margin-bottom:16px}
+  .burbuja::after{
+    content:""; position:absolute; left:15px; bottom:-8px;
+    border:9px solid transparent; border-top-color:var(--burbuja); border-bottom:0;
+  }
   textarea.borrador{
-    width:100%;min-height:132px;padding:14px;font:inherit;font-size:16px;line-height:1.5;
-    background:var(--fondo);color:var(--tinta);
-    border:1px solid var(--linea);border-radius:10px;resize:vertical;
+    display:block; width:100%; min-height:128px; padding:15px 16px;
+    font:400 16.5px/1.55 var(--texto); color:var(--tinta);
+    background:var(--burbuja); border:1px solid transparent;
+    border-radius:14px 14px 14px 4px; resize:vertical;
   }
-  textarea.borrador:focus{outline:2px solid var(--acento);outline-offset:1px}
+  textarea.borrador:focus{border-color:var(--pluma); outline:none}
 
-  .botones{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  /* ── Botones ──────────────────────────────────────────── */
+  .botones{display:flex; gap:8px; flex-wrap:wrap}
   button.b{
-    font:inherit;font-size:15px;font-weight:600;padding:11px 15px;border-radius:10px;
-    border:1px solid var(--linea);background:var(--papel);color:var(--tinta);cursor:pointer;
+    font:600 15px/1.2 var(--texto); padding:12px 15px; cursor:pointer;
+    border:1px solid var(--linea); border-radius:9px;
+    background:var(--hoja); color:var(--tinta);
   }
-  button.b:hover{border-color:var(--suave)}
-  button.b.principal{background:var(--acento);border-color:var(--acento);color:#fff;flex:1;min-width:180px}
-  button.b.principal:hover{filter:brightness(1.07)}
-  button.b.tenue{color:var(--suave)}
-  button.b.peligro{color:var(--acento)}
+  button.b:hover{border-color:var(--apagado)}
+  button.b.principal{
+    flex:1 1 100%; background:var(--pluma); border-color:var(--pluma);
+    color:var(--hoja); padding:14px 16px; font-size:16px;
+  }
+  button.b.principal:hover{filter:brightness(1.12)}
+  button.b.tenue{background:transparent; border-color:transparent; color:var(--apagado)}
+  button.b.tenue:hover{color:var(--tinta); border-color:var(--linea)}
+  button.b.peligro{background:transparent; border-color:transparent; color:var(--rosa)}
+  button.b.peligro:hover{border-color:var(--rosa)}
 
-  label.campo{display:block;margin-bottom:13px}
-  label.campo > span{display:block;font-size:14px;font-weight:600;margin-bottom:5px}
-  label.campo .pista{font-weight:400;color:var(--suave)}
-  input[type=text],input[type=tel],input[type=date],input[type=time],select{
-    width:100%;padding:11px 12px;font:inherit;font-size:16px;
-    background:var(--papel);color:var(--tinta);
-    border:1px solid var(--linea);border-radius:10px;
+  /* ── Formularios ──────────────────────────────────────── */
+  label.campo{display:block; margin-bottom:14px}
+  label.campo > span{
+    display:block; margin-bottom:6px;
+    font:600 13px/1.3 var(--texto); letter-spacing:.05em; text-transform:uppercase;
   }
-  .fila{display:flex;gap:10px}
-  .fila > *{flex:1}
-  .casillas{display:flex;flex-wrap:wrap;gap:8px}
+  label.campo .pista{text-transform:none; letter-spacing:0; font-weight:400; color:var(--apagado)}
+  input[type=text],input[type=tel],input[type=date],select{
+    width:100%; padding:12px; font:400 16px/1.4 var(--texto);
+    background:var(--papel); color:var(--tinta);
+    border:1px solid var(--linea); border-radius:9px;
+  }
+  input:focus,select:focus{outline:none; border-color:var(--pluma); box-shadow:0 0 0 3px var(--pluma-tenue)}
+  .fila{display:flex; gap:10px; flex-wrap:wrap}
+  .fila > *{flex:1 1 150px}
+
+  .casillas{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px}
   .casillas label{
-    display:flex;align-items:center;gap:7px;padding:9px 13px;font-size:15px;
-    border:1px solid var(--linea);border-radius:99px;cursor:pointer;background:var(--papel);
+    display:flex; align-items:center; gap:8px; padding:9px 13px; cursor:pointer;
+    font-size:15px; background:var(--hoja);
+    border:1px solid var(--linea); border-radius:99px;
   }
-  .casillas label:has(input:checked){background:var(--acento-suave);border-color:var(--acento);color:var(--acento);font-weight:600}
-  .casillas input{accent-color:var(--acento);width:17px;height:17px}
+  .casillas label:has(input:checked){
+    background:var(--pluma-tenue); border-color:var(--pluma); color:var(--pluma); font-weight:600;
+  }
+  .casillas input{accent-color:var(--pluma); width:17px; height:17px}
 
   .consentimiento{
-    background:var(--acento-suave);border:1px solid var(--acento);border-radius:10px;
-    padding:13px;font-size:14.5px;margin:6px 0 14px;
+    margin:2px 0 16px; padding:14px; font-size:14.5px; line-height:1.5;
+    background:var(--pluma-tenue); border-left:3px solid var(--pluma); border-radius:0 9px 9px 0;
   }
-  .consentimiento label{display:flex;gap:9px;align-items:flex-start;cursor:pointer;font-weight:600}
-  .consentimiento input{margin-top:3px;accent-color:var(--acento);width:18px;height:18px;flex:none}
+  .consentimiento label{display:flex; gap:10px; align-items:flex-start; cursor:pointer; font-weight:600}
+  .consentimiento input{flex:none; margin-top:3px; accent-color:var(--pluma); width:18px; height:18px}
 
-  .vacio{text-align:center;padding:40px 20px;color:var(--suave)}
-  .vacio strong{display:block;font-size:18px;color:var(--tinta);margin-bottom:6px}
-
-  ul.lista{list-style:none;margin:0;padding:0}
+  /* ── Listas ───────────────────────────────────────────── */
+  ul.lista{list-style:none; margin:0; padding:0}
   ul.lista li{
-    display:flex;justify-content:space-between;align-items:center;gap:12px;
-    padding:13px 0;border-bottom:1px solid var(--linea);
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    padding:14px 0; border-bottom:1px solid var(--linea);
   }
-  ul.lista li:last-child{border-bottom:none}
-  ul.lista .datos{min-width:0}
-  ul.lista .datos b{font-size:16.5px}
-  ul.lista .datos small{display:block;color:var(--suave);font-size:13.5px}
+  ul.lista li:last-child{border-bottom:0}
+  ul.lista li:first-child{padding-top:2px}
+  .datos{min-width:0}
+  .datos b{font:600 17px/1.3 var(--display); font-variation-settings:"opsz" 20,"SOFT" 25}
+  .datos small{display:block; margin-top:2px; color:var(--apagado); font-size:13.5px; line-height:1.45}
 
-  .mensaje-item{padding:11px 0;border-bottom:1px solid var(--linea);font-size:16px}
-  .mensaje-item:last-child{border-bottom:none}
-  .mensaje-item small{display:block;color:var(--suave);font-size:12.5px;margin-top:2px}
+  .mensaje-item{padding:12px 0; border-bottom:1px solid var(--linea); font-size:16px; line-height:1.5}
+  .mensaje-item:last-child{border-bottom:0}
+  .mensaje-item small{
+    display:block; margin-top:3px; color:var(--apagado);
+    font-size:12px; letter-spacing:.05em; text-transform:uppercase; font-weight:600;
+  }
 
-  details.plegable{border:1px solid var(--linea);border-radius:10px;padding:0;margin-bottom:10px;background:var(--papel)}
-  details.plegable > summary{padding:13px 15px;font-weight:600;cursor:pointer;font-size:16px;list-style:none}
+  /* ── Plegables ────────────────────────────────────────── */
+  details.plegable{
+    margin-bottom:14px; background:var(--hoja);
+    border:1px solid var(--linea); border-radius:var(--curva); box-shadow:var(--relieve);
+  }
+  details.plegable > summary{
+    padding:15px 17px; cursor:pointer; list-style:none;
+    font:600 16px/1.3 var(--display); font-variation-settings:"opsz" 20,"SOFT" 25;
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+  }
   details.plegable > summary::-webkit-details-marker{display:none}
-  details.plegable > summary::after{content:" ▾";color:var(--suave)}
-  details.plegable[open] > summary::after{content:" ▴"}
-  details.plegable > div{padding:0 15px 15px}
+  details.plegable > summary::after{content:"+"; color:var(--apagado); font:400 20px/1 var(--texto)}
+  details.plegable[open] > summary::after{content:"–"}
+  details.plegable > div{padding:0 17px 17px}
 
+  /* ── Avisos ───────────────────────────────────────────── */
   .aviso{
-    background:var(--alerta-suave);border:1px solid var(--alerta);color:var(--alerta);
-    border-radius:10px;padding:13px 15px;font-size:14.5px;margin-bottom:14px;
+    margin-bottom:14px; padding:15px 17px; font-size:14.5px; line-height:1.55;
+    background:var(--oro-tenue); color:var(--oro);
+    border-left:3px solid var(--oro); border-radius:0 var(--curva) var(--curva) 0;
   }
-  .aviso b{display:block;margin-bottom:3px}
-  .aviso a{color:inherit}
+  .aviso b.titulo{
+    display:block; margin-bottom:5px;
+    font:600 15.5px/1.3 var(--display); font-variation-settings:"opsz" 20,"SOFT" 25;
+  }
+
+  .vacio{text-align:center; padding:42px 20px}
+  .vacio strong{
+    display:block; margin-bottom:7px;
+    font:600 20px/1.25 var(--display); font-variation-settings:"opsz" 30,"SOFT" 30;
+    text-wrap:balance;
+  }
+  .vacio span{color:var(--apagado)}
+
+  table.cuenta{width:100%; border-collapse:collapse; font-size:15px}
+  table.cuenta td{padding:9px 0; border-bottom:1px solid var(--linea)}
+  table.cuenta td:last-child{
+    text-align:right; font-weight:700; font-variant-numeric:tabular-nums;
+  }
+  table.cuenta tr:last-child td{border-bottom:0}
 
   .brindis{
-    position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(14px);
-    background:var(--tinta);color:var(--fondo);padding:12px 20px;border-radius:99px;
-    font-size:15px;font-weight:600;opacity:0;pointer-events:none;transition:.22s;z-index:60;
-    box-shadow:0 8px 24px rgba(0,0,0,.2);max-width:90vw;text-align:center;
+    position:fixed; left:50%; bottom:24px; z-index:60; max-width:90vw;
+    transform:translateX(-50%) translateY(12px);
+    padding:13px 22px; border-radius:99px; text-align:center;
+    background:var(--tinta); color:var(--papel);
+    font:600 15px/1.3 var(--texto);
+    opacity:0; pointer-events:none; transition:opacity .2s, transform .2s;
+    box-shadow:0 10px 30px -8px rgba(0,0,0,.45);
   }
-  .brindis.ver{opacity:1;transform:translateX(-50%) translateY(0)}
+  .brindis.ver{opacity:1; transform:translateX(-50%) translateY(0)}
 
-  table.horario{width:100%;border-collapse:collapse;font-size:14.5px}
-  table.horario td{padding:7px 0;border-bottom:1px solid var(--linea)}
-  table.horario td:last-child{text-align:right;color:var(--suave)}
-  table.horario tr:last-child td{border-bottom:none}
+  .nota-pie{
+    padding:10px 12px 0; text-align:center;
+    color:var(--apagado); font-size:13.5px; line-height:1.5;
+  }
 
-  .nota-pie{color:var(--suave);font-size:13.5px;text-align:center;padding:8px 10px 0}
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; animation:none !important; scroll-behavior:auto !important}
+  }
   [hidden]{display:none !important}
 </style>
 </head>
@@ -181,7 +303,7 @@
   </p>
 </div>
 
-<div class="brindis" id="brindis"></div>
+<div class="brindis" id="brindis" role="status" aria-live="polite"></div>
 
 <script>
 "use strict";
@@ -313,8 +435,7 @@ function hoyMMDD(){ return hoyISO().slice(5); }
 function fechaBonita(iso){
   if(!iso) return "";
   const [a,m,d] = iso.split("-").map(Number);
-  const f = new Date(a, m-1, d);
-  return f.toLocaleDateString("es-MX", {day:"numeric", month:"long", year:"numeric"});
+  return new Date(a, m-1, d).toLocaleDateString("es-MX", {day:"numeric", month:"long", year:"numeric"});
 }
 
 function escapar(s){
@@ -334,7 +455,7 @@ function brindar(texto){
   b.textContent = texto;
   b.classList.add("ver");
   clearTimeout(brindar._t);
-  brindar._t = setTimeout(()=>b.classList.remove("ver"), 2600);
+  brindar._t = setTimeout(() => b.classList.remove("ver"), 2600);
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -382,8 +503,7 @@ function elegirMensaje(p){
   const bolsa = frescos.length ? frescos : posibles;
 
   const salto = variantes[p.id] || 0;
-  const i = (revoltura(p.id + hoyISO()) + salto) % bolsa.length;
-  return bolsa[i];
+  return bolsa[(revoltura(p.id + hoyISO()) + salto) % bolsa.length];
 }
 
 // "Don Ernesto" no se saluda como "Don". Los tratamientos se quedan pegados al nombre.
@@ -394,8 +514,7 @@ const TRATAMIENTOS = ["don","dona","doña","sr","sr.","sra","sra.","srta","srta.
 function nombreDeSaludo(completo){
   const palabras = String(completo || "").trim().split(/\s+/).filter(Boolean);
   if(!palabras.length) return "";
-  const primera = palabras[0].toLowerCase();
-  if(palabras.length > 1 && TRATAMIENTOS.includes(primera)) return palabras[0] + " " + palabras[1];
+  if(palabras.length > 1 && TRATAMIENTOS.includes(palabras[0].toLowerCase())) return palabras[0] + " " + palabras[1];
   return palabras[0];
 }
 
@@ -437,7 +556,7 @@ function marcarEnviado(id, mensajeId){
   delete borradores[id];
   delete variantes[id];
   guardar(); pintar();
-  brindar("Enviado a " + p.nombre + " ✓");
+  brindar("Enviado a " + p.nombre);
 }
 
 function otroMensaje(id){
@@ -470,8 +589,7 @@ function reanudar(id){
 function darDeBaja(id){
   const p = estado.personas.find(x => x.id === id);
   if(!p) return;
-  const ok = confirm("Dar de baja a " + p.nombre + " y borrar su teléfono.\n\nEsto no se puede deshacer. Es lo correcto cuando alguien pide salir.\n\n¿Continuar?");
-  if(!ok) return;
+  if(!confirm("Dar de baja a " + p.nombre + " y borrar su teléfono.\n\nEsto no se puede deshacer. Es lo correcto cuando alguien pide salir.\n\n¿Continuar?")) return;
   estado.personas = estado.personas.filter(x => x.id !== id);
   guardar(); pintar();
   brindar("Se dio de baja a " + p.nombre);
@@ -482,50 +600,49 @@ function darDeBaja(id){
    ───────────────────────────────────────────────────────────── */
 function pintarHoy(){
   const cont = document.getElementById("vista-hoy");
-  const todos = estado.personas;
 
-  if(!todos.length){
+  if(!estado.personas.length){
     cont.innerHTML = `
       <div class="tarjeta vacio">
         <strong>Todavía no hay nadie registrado</strong>
-        Empieza con 5 o 10 personas que ya te dijeron que sí.
-        <div class="botones" style="justify-content:center;margin-top:16px">
-          <button class="b principal" onclick="irA('personas')" style="flex:0">Registrar a la primera persona</button>
+        <span>Empieza con cinco o diez personas que ya te dijeron que sí.</span>
+        <div class="botones" style="justify-content:center;margin-top:18px">
+          <button class="b principal" style="flex:0 1 auto" onclick="irA('personas')">Registrar a la primera persona</button>
         </div>
       </div>`;
     return;
   }
 
-  const tocan = todos.filter(leTocaHoy);
-  const enviadosHoy = todos.filter(p => p.historial.some(h => h.fecha === hoyISO()));
-
+  const tocan = estado.personas.filter(leTocaHoy);
+  const enviadosHoy = estado.personas.filter(p => p.historial.some(h => h.fecha === hoyISO()));
   let html = "";
 
   if(!tocan.length){
     html += `
       <div class="tarjeta vacio">
         <strong>Ya no falta nadie por hoy</strong>
-        ${enviadosHoy.length ? "Mandaste " + enviadosHoy.length + " mensaje" + (enviadosHoy.length===1?"":"s") + " hoy. Gracias." : "Hoy no le toca a nadie según las frecuencias que pidieron."}
+        <span>${enviadosHoy.length
+          ? "Mandaste " + enviadosHoy.length + " mensaje" + (enviadosHoy.length===1?"":"s") + " hoy. Gracias."
+          : "Hoy no le toca a nadie, según las frecuencias que pidieron."}</span>
       </div>`;
   }
 
   tocan.forEach(p => {
     const m = elegirMensaje(p);
     const texto = borradores[p.id] !== undefined ? borradores[p.id] : armarTexto(p, m);
-    const cumple = esCumple(p);
-    const nunca = p.historial.length === 0;
-
     html += `
       <div class="tarjeta">
         <div class="quien">
           <span class="nombre">${escapar(p.nombre)}</span>
-          ${cumple ? '<span class="etiqueta alerta">Cumple años hoy</span>' : ''}
-          ${nunca ? '<span class="etiqueta verde">Primer mensaje</span>' : ''}
-          <span class="etiqueta gris">${escapar(TIPOS[m.t] || m.t)}</span>
-          ${p.nota ? '<span class="etiqueta gris">' + escapar(p.nota) + '</span>' : ''}
+          ${esCumple(p) ? '<span class="etiqueta oro">Cumple años hoy</span>' : ''}
+          ${p.historial.length === 0 ? '<span class="etiqueta verde">Primer mensaje</span>' : ''}
+          <span class="etiqueta">${escapar(TIPOS[m.t] || m.t)}</span>
+          ${p.nota ? '<span class="etiqueta nota">' + escapar(p.nota) + '</span>' : ''}
         </div>
-        <textarea class="borrador" data-borrador="${p.id}"
-          aria-label="Mensaje para ${escapar(p.nombre)}">${escapar(texto)}</textarea>
+        <div class="burbuja">
+          <textarea class="borrador" data-borrador="${p.id}"
+            aria-label="Mensaje para ${escapar(p.nombre)}">${escapar(texto)}</textarea>
+        </div>
         <div class="botones">
           <button class="b principal" data-enviar="${p.id}" data-mensaje="${m.id}">
             Abrir en ${estado.ajustes.canal === "sms" ? "mensajes" : "WhatsApp"}
@@ -540,10 +657,13 @@ function pintarHoy(){
   if(enviadosHoy.length){
     html += `
       <details class="plegable">
-        <summary>Enviados hoy (${enviadosHoy.length})</summary>
+        <summary>Enviados hoy <span class="etiqueta">${enviadosHoy.length}</span></summary>
         <div><ul class="lista">` +
-          enviadosHoy.map(p => `<li><div class="datos"><b>${escapar(p.nombre)}</b>
-            <small>${escapar((MENSAJES.find(m => m.id === p.historial[p.historial.length-1].mensajeId) || {x:""}).x)}</small></div></li>`).join("") +
+          enviadosHoy.map(p => {
+            const ultimo = MENSAJES.find(m => m.id === p.historial[p.historial.length-1].mensajeId);
+            return `<li><div class="datos"><b>${escapar(p.nombre)}</b>
+              <small>${escapar(ultimo ? ultimo.x : "mensaje escrito a mano")}</small></div></li>`;
+          }).join("") +
         `</ul></div>
       </details>`;
   }
@@ -560,18 +680,20 @@ function pintarPersonas(){
 
   let lista = "";
   if(ps.length){
-    lista = `<div class="tarjeta"><h2>Registradas (${ps.length})</h2><ul class="lista">` +
+    lista = `<div class="tarjeta"><h2>Registradas <span class="etiqueta">${ps.length}</span></h2><ul class="lista">` +
       ps.map(p => {
         const pausada = p.pausadoHasta && p.pausadoHasta >= hoyISO();
         const ultimo = p.historial.length ? p.historial[p.historial.length-1].fecha : null;
         return `<li>
           <div class="datos">
             <b>${escapar(p.nombre)}</b>
-            <small>${escapar(FRECUENCIAS[p.frecuencia] || p.frecuencia)}
-              · ${p.tipos.map(t => escapar(TIPOS[t] || t)).join(", ") || "sin preferencia"}</small>
-            <small>${p.historial.length} enviado${p.historial.length===1?"":"s"}${ultimo ? " · último el " + fechaBonita(ultimo) : " · aún ninguno"}${pausada ? " · <b>en pausa</b>" : ""}</small>
+            <small>${escapar(FRECUENCIAS[p.frecuencia] || p.frecuencia)} ·
+              ${p.tipos.map(t => escapar(TIPOS[t] || t)).join(", ") || "sin preferencia"}</small>
+            <small>${p.historial.length} enviado${p.historial.length===1?"":"s"}${
+              ultimo ? " · último el " + fechaBonita(ultimo) : " · aún ninguno"}${
+              pausada ? " · <b>en pausa</b>" : ""}</small>
           </div>
-          <div class="botones" style="margin:0;flex:none">
+          <div class="botones" style="flex:none">
             ${pausada
               ? `<button class="b" data-reanudar="${p.id}">Reanudar</button>`
               : `<button class="b tenue" data-pausa="${p.id}">Pausar</button>`}
@@ -584,7 +706,7 @@ function pintarPersonas(){
 
   cont.innerHTML = `
     <div class="aviso">
-      <b>Antes de registrar a alguien</b>
+      <b class="titulo">Antes de registrar a alguien</b>
       Pregúntale directamente si quiere recibir los mensajes y espera un sí claro.
       Que otra persona te haya dado su número no es permiso.
     </div>
@@ -594,7 +716,7 @@ function pintarPersonas(){
       <div>
         <form id="formAlta">
           <label class="campo"><span>Nombre <span class="pista">— como le dicen</span></span>
-            <input type="text" name="nombre" required autocomplete="off" placeholder="Rosa"></label>
+            <input type="text" name="nombre" required autocomplete="off" placeholder="Rosa María"></label>
 
           <label class="campo"><span>Teléfono <span class="pista">— con lada si es de otro país</span></span>
             <input type="tel" name="telefono" required autocomplete="off" placeholder="55 1234 5678"></label>
@@ -611,7 +733,7 @@ function pintarPersonas(){
           </div>
 
           <label class="campo"><span>Qué tipo de mensaje pidió</span></label>
-          <div class="casillas" style="margin-bottom:14px">
+          <div class="casillas">
             ${["animo","amistad","gratitud","espiritual","dificil"].map(t =>
               `<label><input type="checkbox" name="tipos" value="${t}" ${t==="animo"||t==="amistad"?"checked":""}> ${TIPOS[t]}</label>`).join("")}
           </div>
@@ -662,7 +784,7 @@ function pintarPersonas(){
     form.reset();
     document.getElementById("cajaAlta").open = false;
     pintar();
-    brindar(nombre + " quedó registrada ✓");
+    brindar(nombre + " quedó registrada");
   });
 }
 
@@ -677,16 +799,14 @@ function pintarMensajes(){
   cont.innerHTML = `
     <div class="tarjeta">
       <h2>La biblioteca</h2>
-      <p style="color:var(--suave);font-size:15px;margin:0">
-        ${MENSAJES.length} mensajes. La app nunca repite uno hasta agotar los demás de ese tipo,
-        y siempre puedes editar el texto antes de enviarlo.
-      </p>
+      <p class="acota">${MENSAJES.length} mensajes. La app no repite uno hasta agotar los demás de ese tipo,
+        y siempre puedes editar el texto antes de enviarlo.</p>
     </div>` +
     Object.keys(TIPOS).map(t => {
       const grupo = MENSAJES.filter(m => m.t === t);
       if(!grupo.length) return "";
       return `<details class="plegable">
-        <summary>${TIPOS[t]} (${grupo.length})</summary>
+        <summary>${TIPOS[t]} <span class="etiqueta">${grupo.length}</span></summary>
         <div>` + grupo.map(m =>
           `<div class="mensaje-item">${escapar(m.x)}
             <small>${usados[m.id] ? "enviado " + usados[m.id] + " ve" + (usados[m.id]===1?"z":"ces") : "aún sin usar"}</small>
@@ -695,11 +815,9 @@ function pintarMensajes(){
     }).join("") + `
     <div class="tarjeta">
       <h2>Para agregar más</h2>
-      <p style="color:var(--suave);font-size:15px;margin:0">
-        Los mensajes viven en la lista <b>MENSAJES</b> dentro de este mismo archivo, y en
-        <b>docs/MENSAJES.md</b>. Cópialos de una línea existente y cámbiale el texto.
-        Antes de agregar uno, léelo en voz alta: si suena a frase de calendario, no sirve.
-      </p>
+      <p class="acota">Los mensajes viven en la lista <b>MENSAJES</b> dentro de este mismo archivo, y en
+        <b>docs/MENSAJES.md</b>. Copia una línea existente y cámbiale el texto.
+        Antes de agregar uno, léelo en voz alta: si suena a frase de calendario, no sirve.</p>
     </div>`;
 }
 
@@ -730,21 +848,31 @@ function pintarAjustes(){
 
     <div class="tarjeta">
       <h2>Copia de respaldo</h2>
-      <p style="color:var(--suave);font-size:15px;margin:0 0 12px">
-        Todo vive solo en este dispositivo. Si se pierde el teléfono, se pierde la lista.
+      <p class="acota" style="margin-bottom:14px">Todo vive solo en este dispositivo. Si se pierde el teléfono, se pierde la lista.
         Exporta una vez por semana y guarda el archivo en un lugar con contraseña —
-        contiene números de teléfono, así que no lo mandes por chat ni por correo.
-      </p>
+        contiene números de teléfono, así que no lo mandes por chat ni por correo.</p>
       <div class="botones">
         <button class="b principal" id="exportar">Exportar copia</button>
         <button class="b" id="importar">Restaurar de un archivo</button>
       </div>
       <input type="file" id="archivo" accept="application/json" hidden>
+
+      <div style="margin-top:16px">
+        <label class="campo" style="margin-bottom:8px">
+          <span>La copia, en texto</span>
+        </label>
+        <textarea class="borrador" id="respaldoTexto" spellcheck="false"
+          style="border-radius:9px;font-size:13px;min-height:104px" aria-label="Copia de respaldo en texto"
+          placeholder="Al exportar, la copia aparece aquí para que la selecciones y la guardes en una nota. También puedes pegar aquí una copia anterior y restaurarla."></textarea>
+        <div class="botones" style="margin-top:10px">
+          <button class="b" id="restaurarPegado">Restaurar de lo que está aquí</button>
+        </div>
+      </div>
     </div>
 
     <div class="tarjeta">
       <h2>Cómo va</h2>
-      <table class="horario">
+      <table class="cuenta">
         <tr><td>Personas registradas</td><td>${estado.personas.length}</td></tr>
         <tr><td>Mensajes enviados en total</td><td>${total}</td></tr>
         <tr><td>En pausa</td><td>${estado.personas.filter(p => p.pausadoHasta && p.pausadoHasta >= hoyISO()).length}</td></tr>
@@ -753,16 +881,16 @@ function pintarAjustes(){
     </div>
 
     <div class="aviso">
-      <b>Si alguien responde algo grave</b>
+      <b class="titulo">Si alguien responde algo grave</b>
       Contesta como persona y pronto, aunque no sepas qué decir. No lo cargues solo: avísale
       hoy mismo a quien coordina. Pausa sus mensajes programados antes de que le llegue uno
       alegre encima. Y pásale una línea de ayuda sin cortarle la conversación.
-      <div style="margin-top:9px">
+      <div style="margin-top:10px">
         México · Línea de la Vida <b>800 911 2000</b><br>
         Estados Unidos · <b>988</b>, con atención en español<br>
         Si hay riesgo en este momento · <b>911</b>
       </div>
-      <div style="margin-top:9px">Verifica estos números en tu país cada seis meses.</div>
+      <div style="margin-top:10px">Verifica estos números en tu país cada seis meses.</div>
     </div>`;
 
   document.getElementById("guardarAjustes").onclick = () => {
@@ -770,19 +898,67 @@ function pintarAjustes(){
     a.lada  = document.getElementById("ajLada").value.trim();
     a.firma = document.getElementById("ajFirma").value.trim();
     guardar(); pintar();
-    brindar("Ajustes guardados ✓");
+    brindar("Ajustes guardados");
   };
 
-  document.getElementById("exportar").onclick = () => {
-    const blob = new Blob([JSON.stringify({version:1, exportado:hoyISO(), personas:estado.personas, ajustes:estado.ajustes}, null, 2)],
-                          {type:"application/json"});
-    const url = URL.createObjectURL(blob);
-    const liga = document.createElement("a");
-    liga.href = url;
-    liga.download = "un-mensaje-para-ti-" + hoyISO() + ".json";
-    liga.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    brindar("Copia descargada");
+  // Restaura desde el texto de una copia. Devuelve true si se aplicó.
+  function restaurarDesde(texto){
+    let d;
+    try{ d = JSON.parse(texto); }catch(e){ brindar("Esa copia no se pudo leer"); return false; }
+    if(!d || !Array.isArray(d.personas)){ brindar("Esa copia no tiene una lista de personas"); return false; }
+    if(!confirm("Esto reemplaza la lista actual (" + estado.personas.length + " personas) por la de la copia (" + d.personas.length + "). ¿Continuar?")) return false;
+    estado.personas = d.personas;
+    estado.ajustes = Object.assign({}, AJUSTES_INICIALES, d.ajustes || {});
+    guardar(); pintar();
+    brindar("Restaurado: " + d.personas.length + " personas");
+    return true;
+  }
+
+  // Guardar el archivo depende de dónde se esté usando la app: abierta como página
+  // publicada, la descarga la media el visor; abierta como archivo, la hace el navegador.
+  // Si ninguna procede, la copia igual queda a la vista y en el portapapeles.
+  async function bajarArchivo(nombre, json){
+    try{
+      const descargas = window.claude && window.claude.use ? await window.claude.use("downloads") : null;
+      if(descargas){
+        await descargas.save({filename: nombre, data: json});
+        return "guardado";
+      }
+    }catch(e){
+      return (e && e.code === "declined") ? "cancelado" : "no";
+    }
+    try{
+      const url = URL.createObjectURL(new Blob([json], {type:"application/json"}));
+      const liga = document.createElement("a");
+      liga.href = url;
+      liga.download = nombre;
+      liga.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      return "guardado";
+    }catch(e){ return "no"; }
+  }
+
+  document.getElementById("exportar").onclick = async () => {
+    const json = JSON.stringify({version:1, exportado:hoyISO(), personas:estado.personas, ajustes:estado.ajustes}, null, 2);
+
+    const texto = document.getElementById("respaldoTexto");
+    texto.value = json;
+    texto.scrollIntoView({block:"nearest"});
+
+    let copio = false;
+    try{ await navigator.clipboard.writeText(json); copio = true; }catch(e){ /* sin permiso al portapapeles */ }
+
+    const archivo = await bajarArchivo("un-mensaje-para-ti-" + hoyISO() + ".json", json);
+    if(archivo === "guardado")      brindar(copio ? "Copia guardada y en el portapapeles" : "Copia guardada");
+    else if(archivo === "cancelado") brindar("No se guardó el archivo. La copia quedó aquí abajo");
+    else                             brindar(copio ? "Copia en el portapapeles y aquí abajo"
+                                                   : "Copia lista aquí abajo — selecciónala y guárdala");
+  };
+
+  document.getElementById("restaurarPegado").onclick = () => {
+    const texto = document.getElementById("respaldoTexto").value.trim();
+    if(!texto){ brindar("Pega aquí el texto de una copia"); return; }
+    restaurarDesde(texto);
   };
 
   const archivo = document.getElementById("archivo");
@@ -791,20 +967,8 @@ function pintarAjustes(){
     const f = archivo.files[0];
     if(!f) return;
     const lector = new FileReader();
-    lector.onload = () => {
-      try{
-        const d = JSON.parse(lector.result);
-        if(!Array.isArray(d.personas)) throw new Error("formato");
-        if(!confirm("Esto reemplaza la lista actual (" + estado.personas.length + " personas) por la del archivo (" + d.personas.length + "). ¿Continuar?")) return;
-        estado.personas = d.personas;
-        estado.ajustes = Object.assign({}, AJUSTES_INICIALES, d.ajustes || {});
-        guardar(); pintar();
-        brindar("Restaurado: " + d.personas.length + " personas");
-      }catch(e){
-        brindar("Ese archivo no se pudo leer");
-      }
-      archivo.value = "";
-    };
+    lector.onload = () => { restaurarDesde(lector.result); archivo.value = ""; };
+    lector.onerror = () => { brindar("Ese archivo no se pudo abrir"); archivo.value = ""; };
     lector.readAsText(f);
   };
 }
@@ -830,9 +994,9 @@ function pintar(){
   globo.textContent = pendientes;
   globo.hidden = pendientes === 0;
 
-  const f = new Date();
+  const dia = DIAS[new Date().getDay()];
   document.getElementById("subtitulo").textContent =
-    DIAS[f.getDay()].charAt(0).toUpperCase() + DIAS[f.getDay()].slice(1) + " · " +
+    dia.charAt(0).toUpperCase() + dia.slice(1) + " · " +
     (pendientes ? pendientes + " por mandar" : "nada pendiente");
 
   if(vistaActual === "hoy")      pintarHoy();
