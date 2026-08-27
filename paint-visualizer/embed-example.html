@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Embed Example — one script tag</title>
+</head>
+<body style="margin:0;padding:40px 20px;font-family:system-ui,sans-serif">
+<div style="max-width:1240px;margin:0 auto">
+  <h1 style="font-size:22px">Embed example</h1>
+  <p style="color:#666">This is the whole integration: a stylesheet, one script, one div, one call.
+     Works on WordPress, Squarespace, Wix, Webflow, Shopify, or a hand-written page.</p>
+
+  <link rel="stylesheet" href="dist/paint-visualizer.css">
+  <div id="visualizer"></div>
+  <script src="dist/paint-visualizer.js"></script>
+  <script>
+    PaintViz.mount('#visualizer', {
+      brand: { name: 'Your Painting Company', accent: '#1f7a4d' },
+      lead:  { email: 'quotes@yourcompany.com' }
+    });
+  </script>
+</div>
+</body>
+</html>
